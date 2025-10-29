@@ -1,6 +1,6 @@
 using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using Firmeza.Web.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Firmeza.Web.Controllers;
 
