@@ -26,4 +26,11 @@
       <PackageReference Include="Supabase" Version="1.1.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Areas\SalesController\Controllers\" />
+      <Folder Include="Areas\SalesController\Data\" />
+      <Folder Include="Areas\SalesController\Models\" />
+      <Folder Include="Areas\SalesController\Views\" />
+    </ItemGroup>
+
 </Project>

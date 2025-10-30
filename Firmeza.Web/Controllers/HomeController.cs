@@ -1,9 +1,11 @@
 using System.Diagnostics;
+using Firmeza.Web.Data.Entities;
 using Firmeza.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Firmeza.Web.Controllers;
-
+[Authorize(Roles = UserRoles.Admin)]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
