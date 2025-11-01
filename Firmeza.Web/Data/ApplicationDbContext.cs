@@ -1,10 +1,16 @@
 using Firmeza.Web.Data.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Firmeza.Web.Data;
 
-public class ApplicationDbContext(DbContextOptions options) : DbContext(options)
+public class ApplicationDbContext: IdentityDbContext<ApplicationUser, ApplicationRole, string> 
 {
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) :
+        base(options)
+    {
+        
+    }
      // DbSets
         public DbSet<Category> Categories { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
