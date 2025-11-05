@@ -1,5 +1,6 @@
 using Firmeza.Web.Data;
 using Firmeza.Web.Data.Entities;
+using Firmeza.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,7 +24,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         }
     )
 );
-
+builder.Services.AddScoped<IExcelImportService, ExcelImportService>();
 // Configurar Identity
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 {

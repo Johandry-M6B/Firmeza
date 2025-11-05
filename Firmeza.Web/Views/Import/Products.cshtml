@@ -1,0 +1,185 @@
+@model ImportProductsViewModel
+@{
+    ViewData["Title"] = "Importar Productos desde Excel";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-file-earmark-excel"></i> Importar Productos desde Excel</h2>
+                <a asp-action="Index" asp-controller="Products" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Volver a Productos
+                </a>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <i class="bi bi-info-circle"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="row">
+                <!-- Instrucciones -->
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <i class="bi bi-info-circle"></i> Instrucciones
+                        </div>
+                        <div class="card-body">
+                            <ol class="small">
+                                <li>Descarga la plantilla de Excel</li>
+                                <li>Completa los datos de los productos</li>
+                                <li>Los campos con * son obligatorios</li>
+                                <li>Guarda el archivo</li>
+                                <li>Sube el archivo usando el formulario</li>
+                            </ol>
+
+                            <div class="d-grid gap-2 mt-3">
+                                <a asp-action="DownloadTemplate" class="btn btn-success">
+                                    <i class="bi bi-download"></i> Descargar Plantilla
+                                </a>
+                            </div>
+
+                            <hr />
+
+                            <h6 class="text-primary">Formato de columnas:</h6>
+                            <ul class="small">
+                                <li><strong>Código:</strong> Único por producto</li>
+                                <li><strong>Categoría:</strong> Se crea si no existe</li>
+                                <li><strong>Unidad Medida:</strong> Se crea si no existe</li>
+                                <li><strong>Refrigeración/Peligroso:</strong> Si o No</li>
+                                <li><strong>Stock:</strong> Se suma si el producto existe</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulario de carga -->
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <i class="bi bi-upload"></i> Cargar Archivo Excel
+                        </div>
+                        <div class="card-body">
+                            <form asp-action="Products" method="post" enctype="multipart/form-data">
+                                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                                <div class="mb-3">
+                                    <label asp-for="ExcelFile" class="form-label">
+                                        Seleccionar archivo Excel (.xlsx, .xls)
+                                    </label>
+                                    <input asp-for="ExcelFile" 
+                                           type="file" 
+                                           class="form-control" 
+                                           accept=".xlsx,.xls"
+                                           required />
+                                    <span asp-validation-for="ExcelFile" class="text-danger"></span>
+                                    <div class="form-text">
+                                        Tamaño máximo: 5MB | Formatos permitidos: .xlsx, .xls
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-cloud-upload"></i> Importar Productos
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Resultados de la importación -->
+                    @if (Model.Results.Any())
+                    {
+                        <div class="card mt-4">
+                            <div class="card-header bg-dark text-white">
+                                <i class="bi bi-list-check"></i> Resultados de la Importación
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                <h2 class="text-primary">@Model.TotalProcessed</h2>
+                                                <p class="mb-0">Total Procesados</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                <h2 class="text-success">@Model.TotalSuccess</h2>
+                                                <p class="mb-0">Exitosos</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                <h2 class="text-danger">@Model.ErrorCount</h2>
+                                                <p class="mb-0">Con Errores</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Fila</th>
+                                                <th>Código</th>
+                                                <th>Producto</th>
+                                                <th>Estado</th>
+                                                <th>Mensaje</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var result in Model.Results)
+                                            {
+                                                <tr class="@(result.Success ? "table-success" : "table-danger")">
+                                                    <td>@result.Row</td>
+                                                    <td>@result.Code</td>
+                                                    <td>@result.ProductName</td>
+                                                    <td>
+                                                        @if (result.Success)
+                                                        {
+                                                            <span class="badge bg-success">
+                                                                <i class="bi bi-check-circle"></i> Exitoso
+                                                            </span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-danger">
+                                                                <i class="bi bi-x-circle"></i> Error
+                                                            </span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @result.Message
+                                                        @if (!string.IsNullOrEmpty(result.ErrorDetails))
+                                                        {
+                                                            <br />
+                                                            <small class="text-muted">@result.ErrorDetails</small>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
