@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Firmeza.Web.Data;
 using Firmeza.Web.Data.Entities;
+using Firmeza.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Firmeza.Web.Controllers
@@ -15,10 +16,14 @@ namespace Firmeza.Web.Controllers
     public class SalesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IPdfInvoiceService _pdfInvoiceService;
 
-        public SalesController(ApplicationDbContext context)
+        public SalesController(
+            ApplicationDbContext context,
+            IPdfInvoiceService pdfInvoiceService )
         {
             _context = context;
+            _pdfInvoiceService = pdfInvoiceService;
         }
 
         // GET: Sales
@@ -38,6 +43,8 @@ namespace Firmeza.Web.Controllers
 
             var sale = await _context.Sales
                 .Include(s => s.Customer)
+                .Include(s => s.SalesDetails)
+                .ThenInclude(d => d.Product)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (sale == null)
             {
@@ -162,5 +169,34 @@ namespace Firmeza.Web.Controllers
         {
             return _context.Sales.Any(e => e.Id == id);
         }
+
+            public async Task<IActionResult> DownloadPdf(int id)
+            {
+                try
+                {
+                    var pdfBytes = await _pdfInvoiceService.GenerateInvoicePdf(id); 
+                    var fileName = $"Facture_{id}-{DateTime.Now:yyyy MMMM dd}.pdf";
+                    
+                    return File(pdfBytes, "application/pdf", fileName);
+                }
+                catch (Exception ex)
+                {
+                    TempData["ErrorMessage"] = $"Error generating PDF: {ex.Message}";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+            }
+            public async Task<IActionResult> PrintPdf(int id)
+            {
+                try
+                {
+                    var pdfBytes = await _pdfInvoiceService.GenerateInvoicePdf(id);
+                    return File(pdfBytes, "application/pdf");
+                }
+                catch (Exception ex)
+                {
+                    TempData["ErrorMessage"] = $"Error al generar PDF: {ex.Message}";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+            }
     }
 }

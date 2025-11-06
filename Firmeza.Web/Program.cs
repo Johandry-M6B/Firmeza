@@ -25,6 +25,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     )
 );
 builder.Services.AddScoped<IExcelImportService, ExcelImportService>();
+builder.Services.AddScoped<IPdfInvoiceService, PdfInvoiceService>();
+builder.Services.AddScoped<IExcelImportService, ExcelImportService>();
 // Configurar Identity
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 {
