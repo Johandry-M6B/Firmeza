@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Firmeza</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-dark bg-dark box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" asp-controller="Shop" asp-action="Index">
+                    <i class="bi bi-building"></i> Firmeza - Tienda Online
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Shop" asp-action="Index">
+                                <i class="bi bi-shop"></i> Productos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" asp-controller="Shop" asp-action="Cart">
+                                <i class="bi bi-cart3"></i> Carrito
+                                <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    0
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="Login">
+                                <i class="bi bi-box-arrow-in-right"></i> Admin
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <main role="main">
+        @RenderBody()
+    </main>
+
+    <footer class="border-top footer text-muted mt-5">
+        <div class="container py-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5><i class="bi bi-building"></i> Firmeza</h5>
+                    <p>Materiales de Construcción de Calidad</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Contacto</h5>
+                    <p>
+                        <i class="bi bi-telephone"></i> (605) 300-1234<br />
+                        <i class="bi bi-envelope"></i> ventas@firmeza.com
+                    </p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Horario</h5>
+                    <p>
+                        Lunes a Viernes: 8:00 AM - 6:00 PM<br />
+                        Sábados: 8:00 AM - 2:00 PM
+                    </p>
+                </div>
+            </div>
+            <hr />
+            <p class="text-center">&copy; @DateTime.Now.Year - Firmeza. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    <script>
+        // Actualizar contador del carrito al cargar
+        fetch('/Shop/Cart')
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const count = doc.querySelectorAll('.cart-item').length;
+                document.getElementById('cart-count').textContent = count || '0';
+            });
+    </script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

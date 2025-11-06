@@ -36,7 +36,7 @@ public class AccountController : Controller
     public async Task<IActionResult> Login(LoginViewModel model)
     {
         if (ModelState.IsValid)
-        {
+        { 
             var user = await _userManager.FindByEmailAsync(model.Email);
             if(user == null)
             {

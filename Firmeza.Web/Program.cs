@@ -24,6 +24,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         }
     )
 );
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 builder.Services.AddScoped<IExcelImportService, ExcelImportService>();
 builder.Services.AddScoped<IPdfInvoiceService, PdfInvoiceService>();
 builder.Services.AddScoped<IExcelImportService, ExcelImportService>();
@@ -98,7 +105,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
