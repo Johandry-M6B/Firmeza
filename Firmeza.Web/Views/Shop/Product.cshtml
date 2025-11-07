@@ -1,0 +1,279 @@
+@model Firmeza.Web.Data.Entities.Product
+@{
+    ViewData["Title"] = Model.Name;
+    Layout = "~/Views/Shared/_ShopLayout.cshtml";
+}
+
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Tienda</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index" asp-route-categoryId="@Model.CategoryId">@Model.Category.Name</a></li>
+            <li class="breadcrumb-item active">@Model.Name</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Columna de información del producto -->
+        <div class="col-md-7">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <!-- Código y categoría -->
+                    <div class="mb-3">
+                        <span class="badge bg-info">@Model.Category.Name</span>
+                        <span class="badge bg-secondary">Código: @Model.Code</span>
+                        @if (Model.CurrentStock < Model.MinimumStock)
+                        {
+                            <span class="badge bg-warning text-dark">
+                                <i class="bi bi-exclamation-triangle"></i> Stock Bajo
+                            </span>
+                        }
+                    </div>
+
+                    <!-- Nombre del producto -->
+                    <h1 class="display-6 mb-3">@Model.Name</h1>
+
+                    <!-- Descripción -->
+                    <div class="mb-4">
+                        <h5>Descripción:</h5>
+                        <p class="text-muted">
+                            @(string.IsNullOrEmpty(Model.Description) ? "Sin descripción disponible" : Model.Description)
+                        </p>
+                    </div>
+
+                    <!-- Especificaciones técnicas -->
+                    <div class="mb-4">
+                        <h5>Especificaciones:</h5>
+                        <table class="table table-sm">
+                            <tbody>
+                                @if (!string.IsNullOrEmpty(Model.Mark))
+                                {
+                                    <tr>
+                                        <td class="fw-bold" style="width: 40%;">Marca:</td>
+                                        <td>@Model.Mark</td>
+                                    </tr>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.Model))
+                                {
+                                    <tr>
+                                        <td class="fw-bold">Modelo:</td>
+                                        <td>@Model.Model</td>
+                                    </tr>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.Color))
+                                {
+                                    <tr>
+                                        <td class="fw-bold">Color:</td>
+                                        <td>@Model.Color</td>
+                                    </tr>
+                                }
+                                @if (Model.Weight.HasValue)
+                                {
+                                    <tr>
+                                        <td class="fw-bold">Peso:</td>
+                                        <td>@Model.Weight.Value Kg</td>
+                                    </tr>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.Size))
+                                {
+                                    <tr>
+                                        <td class="fw-bold">Dimensiones:</td>
+                                        <td>@Model.Size</td>
+                                    </tr>
+                                }
+                                <tr>
+                                    <td class="fw-bold">Unidad de Medida:</td>
+                                    <td>@Model.Measurement.Name (@Model.Measurement.Abbreviation)</td>
+                                </tr>
+                                @if (Model.Supplier != null)
+                                {
+                                    <tr>
+                                        <td class="fw-bold">Proveedor:</td>
+                                        <td>@Model.Supplier.TradeName</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Advertencias -->
+                    @if (Model.RequiredRefrigeration || Model.DangerousMaterial)
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i> <strong>Advertencias:</strong>
+                            <ul class="mb-0 mt-2">
+                                @if (Model.RequiredRefrigeration)
+                                {
+                                    <li>Requiere refrigeración</li>
+                                }
+                                @if (Model.DangerousMaterial)
+                                {
+                                    <li>Material peligroso - Manejo especial</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna de compra -->
+        <div class="col-md-5">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-body p-4">
+                    <!-- Precio -->
+                    <div class="text-center mb-4">
+                        <h2 class="text-primary mb-0">
+                            $@Model.SalePrice.ToString("N0")
+                        </h2>
+                        <small class="text-muted">Por @Model.Measurement.Abbreviation</small>
+                    </div>
+
+                    <!-- Stock disponible -->
+                    <div class="alert alert-info mb-4">
+                        <i class="bi bi-box"></i> 
+                        <strong>Stock disponible:</strong> @Model.CurrentStock @Model.Measurement.Abbreviation
+                    </div>
+
+                    <!-- Selector de cantidad -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Cantidad:</label>
+                        <div class="input-group input-group-lg">
+                            <button class="btn btn-outline-secondary" type="button" id="decreaseQty">
+                                <i class="bi bi-dash"></i>
+                            </button>
+                            <input type="number" 
+                                   class="form-control text-center" 
+                                   id="quantity" 
+                                   value="1" 
+                                   min="1" 
+                                   max="@Model.CurrentStock">
+                            <button class="btn btn-outline-secondary" type="button" id="increaseQty">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">Subtotal:</span>
+                            <h4 class="text-success mb-0" id="subtotal">$@Model.SalePrice.ToString("N0")</h4>
+                        </div>
+                        <small class="text-muted">+ IVA (19%)</small>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="d-grid gap-2">
+                        <button type="button" 
+                                class="btn btn-primary btn-lg" 
+                                id="addToCartBtn"
+                                data-product-id="@Model.Id">
+                            <i class="bi bi-cart-plus"></i> Agregar al Carrito
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Seguir Comprando
+                        </a>
+                    </div>
+
+                    <!-- Información adicional -->
+                    <div class="mt-4">
+                        <small class="text-muted">
+                            <i class="bi bi-truck"></i> Entrega disponible<br/>
+                            <i class="bi bi-shield-check"></i> Productos de calidad garantizada<br/>
+                            <i class="bi bi-credit-card"></i> Múltiples formas de pago
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const pricePerUnit = @Model.SalePrice;
+        const maxStock = @Model.CurrentStock;
+        const qtyInput = document.getElementById('quantity');
+        const subtotalDisplay = document.getElementById('subtotal');
+        
+        // Actualizar subtotal
+        function updateSubtotal() {
+            const quantity = parseInt(qtyInput.value) || 1;
+            const subtotal = pricePerUnit * quantity;
+            subtotalDisplay.textContent = '$' + subtotal.toLocaleString('es-CO');
+        }
+        
+        // Aumentar cantidad
+        document.getElementById('increaseQty').addEventListener('click', () => {
+            let currentValue = parseInt(qtyInput.value) || 1;
+            if (currentValue < maxStock) {
+                qtyInput.value = currentValue + 1;
+                updateSubtotal();
+            }
+        });
+        
+        // Disminuir cantidad
+        document.getElementById('decreaseQty').addEventListener('click', () => {
+            let currentValue = parseInt(qtyInput.value) || 1;
+            if (currentValue > 1) {
+                qtyInput.value = currentValue - 1;
+                updateSubtotal();
+            }
+        });
+        
+        // Actualizar al cambiar manualmente
+        qtyInput.addEventListener('change', () => {
+            let value = parseInt(qtyInput.value) || 1;
+            if (value < 1) value = 1;
+            if (value > maxStock) value = maxStock;
+            qtyInput.value = value;
+            updateSubtotal();
+        });
+        
+        // Agregar al carrito
+        document.getElementById('addToCartBtn').addEventListener('click', function() {
+            const productId = this.dataset.productId;
+            const quantity = qtyInput.value;
+            const btn = this;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Agregando...';
+            
+            fetch('/Shop/AddToCart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `productId=${productId}&quantity=${quantity}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('cart-count').textContent = data.cartCount;
+                    showNotification('success', data.message);
+                    btn.innerHTML = '<i class="bi bi-check"></i> ¡Agregado al Carrito!';
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = '<i class="bi bi-cart-plus"></i> Agregar al Carrito';
+                        btn.disabled = false;
+                    }, 2000);
+                } else {
+                    showNotification('error', data.message);
+                    btn.innerHTML = '<i class="bi bi-cart-plus"></i> Agregar al Carrito';
+                    btn.disabled = false;
+                }
+            });
+        });
+        
+        function showNotification(type, message) {
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const notification = `
+                <div class="alert ${alertClass} alert-dismissible fade show position-fixed top-0 end-0 m-3" style="z-index: 9999;">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', notification);
+            setTimeout(() => document.querySelector('.alert').remove(), 3000);
+        }
+    </script>
+}
