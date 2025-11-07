@@ -1,0 +1,222 @@
+@model Firmeza.Web.Models.ViewModels.CheckoutViewModel
+@{
+    ViewData["Title"] = "Checkout";
+    Layout = "~/Views/Shared/_ShopLayout.cshtml";
+}
+
+<div class="container py-4">
+    <h2 class="mb-4"><i class="bi bi-credit-card"></i> Finalizar Compra</h2>
+
+    <form asp-action="PlaceOrder" method="post">
+        <div class="row">
+            <!-- Formulario de datos -->
+            <div class="col-lg-7">
+                <!-- Datos personales -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-person"></i> Datos Personales</h5>
+                    </div>
+                    <div class="card-body">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FullName" class="form-label"></label>
+                                <input asp-for="FullName" class="form-control" placeholder="Ej: Juan Pérez" />
+                                <span asp-validation-for="FullName" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="DocumentNumber" class="form-label"></label>
+                                <input asp-for="DocumentNumber" class="form-control" placeholder="Ej: 1001877889" />
+                                <span asp-validation-for="DocumentNumber" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PhoneNumber" class="form-label"></label>
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="Ej: 3001234567" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" type="email" class="form-control" placeholder="Ej: correo@ejemplo.com" />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="City" class="form-label"></label>
+                            <input asp-for="City" class="form-control" placeholder="Ej: Barranquilla" />
+                            <span asp-validation-for="City" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dirección de entrega -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-truck"></i> Dirección de Entrega</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="DeliveryAddress" class="form-label"></label>
+                            <textarea asp-for="DeliveryAddress" class="form-control" rows="3" 
+                                      placeholder="Ej: Calle 123 #45-67, Barrio Centro"></textarea>
+                            <span asp-validation-for="DeliveryAddress" class="text-danger small"></span>
+                        </div>
+
+                        <div class="alert alert-info small mb-0">
+                            <i class="bi bi-info-circle"></i> 
+                            Asegúrate de incluir referencias para facilitar la entrega
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Método de pago -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-cash-coin"></i> Método de Pago</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="PaymentMethod" class="form-label"></label>
+                            <select asp-for="PaymentMethod" class="form-select">
+                                <option value="">Seleccione un método</option>
+                                <option value="1">💵 Efectivo (Pago contra entrega)</option>
+                                <option value="2">🏦 Transferencia Bancaria</option>
+                                <option value="3">💳 Tarjeta de Crédito</option>
+                                <option value="4">💳 Tarjeta de Débito</option>
+                                <option value="6">📅 Crédito (30 días)</option>
+                            </select>
+                            <span asp-validation-for="PaymentMethod" class="text-danger small"></span>
+                        </div>
+
+                        <div class="alert alert-warning small" id="creditAlert" style="display: none;">
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            El pago a crédito está sujeto a aprobación
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Observaciones -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> Observaciones (Opcional)</h5>
+                    </div>
+                    <div class="card-body">
+                        <textarea asp-for="Observations" class="form-control" rows="3" 
+                                  placeholder="Instrucciones especiales, horario preferido de entrega, etc."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen del pedido -->
+            <div class="col-lg-5">
+                <div class="card shadow-sm sticky-top" style="top: 20px;">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i class="bi bi-cart-check"></i> Resumen del Pedido</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Productos -->
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-3">Productos (@Model.Cart.TotalItems items)</h6>
+                            @foreach (var item in Model.Cart.Items)
+                            {
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div>
+                                        <strong>@item.ProductName</strong><br/>
+                                        <small class="text-muted">
+                                            @item.Quantity x $@item.Price.ToString("N0")
+                                        </small>
+                                    </div>
+                                    <div class="text-end">
+                                        $@item.Total.ToString("N0")
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <hr>
+
+                        <!-- Totales -->
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <strong>$@Model.Cart.Subtotal.ToString("N0")</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>IVA (19%):</span>
+                            <strong>$@Model.Cart.Tax.ToString("N0")</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 text-success">
+                            <span><i class="bi bi-truck"></i> Envío:</span>
+                            <strong>GRATIS</strong>
+                        </div>
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between mb-4">
+                            <h5>Total a Pagar:</h5>
+                            <h4 class="text-primary">$@Model.Cart.Total.ToString("N0")</h4>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Confirmar Pedido
+                            </button>
+                            <a asp-action="Cart" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Volver al Carrito
+                            </a>
+                        </div>
+
+                        <!-- Información de seguridad -->
+                        <div class="mt-4 small text-muted">
+                            <i class="bi bi-shield-check"></i> Compra 100% segura<br/>
+                            <i class="bi bi-lock"></i> Tus datos están protegidos<br/>
+                            <i class="bi bi-truck"></i> Entrega en 2-3 días hábiles
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Mostrar alerta si selecciona crédito
+        document.querySelector('select[name="PaymentMethod"]').addEventListener('change', function() {
+            const creditAlert = document.getElementById('creditAlert');
+            if (this.value === '6') {
+                creditAlert.style.display = 'block';
+            } else {
+                creditAlert.style.display = 'none';
+            }
+        });
+
+        // Validar antes de enviar
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const paymentMethod = document.querySelector('select[name="PaymentMethod"]').value;
+            
+            if (!paymentMethod) {
+                e.preventDefault();
+                alert('Por favor seleccione un método de pago');
+                return false;
+            }
+
+            // Confirmar pedido
+            if (!confirm('¿Confirmar pedido por $@Model.Cart.Total.ToString("N0")?')) {
+                e.preventDefault();
+                return false;
+            }
+
+            // Mostrar loading
+            const btn = this.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
+        });
+    </script>
+}
