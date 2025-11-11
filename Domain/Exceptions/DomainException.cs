@@ -24,4 +24,4 @@ public class DomainException : Exception
     {
          ErrorDetails[key] = value;
     }
-}
+}   

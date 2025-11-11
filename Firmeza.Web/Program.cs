@@ -1,5 +1,6 @@
 using Firmeza.Web.Data;
 using Firmeza.Web.Data.Entities;
+using Firmeza.Web.Filters;
 using Firmeza.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         }
     )
 );
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<DomainExceptionFilter>();
+});
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
