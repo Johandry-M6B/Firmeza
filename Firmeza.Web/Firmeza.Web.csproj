@@ -12,6 +12,7 @@
       <PackageReference Include="EPPlus" Version="8.2.1" />
       <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.21" />
       <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.21" />
+      <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.21" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
         <PrivateAssets>all</PrivateAssets>

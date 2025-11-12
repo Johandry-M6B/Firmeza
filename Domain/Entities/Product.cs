@@ -2,28 +2,27 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Net.NetworkInformation;
 using Domain.Exceptions;
-using Firmeza.Web.Data.Entities;
 
 namespace Domain.Entities;
 
-public abstract class Product
+public  class Product
 {
-    [Key] public int Id { get; private set; }
-    [Required] [MaxLength(20)] public string Code { get; private set; }
-    [Required] [MaxLength(100)] public string Name { get; private set; }
-    [MaxLength(500)] public string Description { get; private set; }
-    [Required] public int CategoryId { get; private set; }
-    [ForeignKey(nameof(CategoryId))] public virtual Category Category { get; private set; }
-    [Required] public int MeasurementId { get; private set; }
-    [ForeignKey(nameof(MeasurementId))] public virtual Measurement Measurement { get; private set; }
+     public int Id { get; private set; }
+     public string Code { get; private set; }
+      public string Name { get; private set; }
+    public string Description { get; private set; }
+    public int CategoryId { get; private set; }
+    public Category Category { get; private set; }
+     public int MeasurementId { get; private set; }
+   public Measurement Measurement { get; private set; }
 
     public int? SupplierId { get; private set; }
-    [ForeignKey(nameof(SupplierId))] public virtual Supplier Supplier { get; private set; }
+     public Supplier Supplier { get; private set; }
 
     //Price e Inventory
     private decimal _buyerPrice;
 
-    [Column(TypeName = "decimal(18,2)")]
+   
     public decimal BuyerPrice
     {
         get => _buyerPrice;
@@ -38,7 +37,7 @@ public abstract class Product
 
     private decimal _salePrice;
 
-    [Column(TypeName = "decimal(18,2)")]
+    
     public decimal SalePrice
     {
         get => _salePrice;
@@ -55,7 +54,7 @@ public abstract class Product
 
     private decimal _wholesalePrice;
 
-    [Column(TypeName = "decimal(18,2)")]
+    
     public decimal WholesalePrice
     {
         get => _wholesalePrice;
@@ -71,11 +70,11 @@ public abstract class Product
     public int CurrentStock { get; private set; }
     public int MinimumStock { get; private set; }
 
-    [MaxLength(50)] public string? Mark { get; private set; }
-    [MaxLength(100)] public string? Model { get; private set; }
-    [MaxLength(50)] public string? Color { get; private set; }
-    [Column(TypeName = "decimal(18,2)")] public decimal? Weight { get; private set; } // in Kg
-    [MaxLength(50)] public string? Size { get; private set; } // E.g: 2m x 1m
+    public string? Mark { get; private set; }
+     public string? Model { get; private set; }
+    public string? Color { get; private set; }
+     public decimal? Weight { get; private set; } // in Kg
+     public string? Size { get; private set; } // E.g: 2m x 1m
 
     //Control
     public bool RequiredRefrigeration { get; private set; } = false;

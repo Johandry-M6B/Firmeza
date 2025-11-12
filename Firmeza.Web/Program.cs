@@ -9,8 +9,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
-builder.Services.AddControllersWithViews();
-
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<DomainExceptionFilter>();
+});
 // Configurar DbContext con PostgreSQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(
@@ -25,10 +27,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         }
     )
 );
-builder.Services.AddControllersWithViews(options =>
-{
-    options.Filters.Add<DomainExceptionFilter>();
-});
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {

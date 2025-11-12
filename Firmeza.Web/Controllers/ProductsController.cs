@@ -66,7 +66,7 @@ namespace Firmeza.Web.Controllers
         public async Task<IActionResult> Create([Bind("Id,Code,Name,Description,CategoryId,MeasurementId,SupplierId,BuyerPrice,SalePrice,WholesalePrice,CurrentStock,MinimumStock,Mark,Model,Color,Weight,Size,RequiredRefrigeration,DangerousMaterial,Active,DateCreated,DateUpdated")] Product product)
         {
             if (ModelState.IsValid)
-            {
+            {   
                 _context.Add(product);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
