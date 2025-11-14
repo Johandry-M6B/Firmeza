@@ -43,6 +43,6 @@ public  class Sale
     public string? Observations { get; set; }
     public DateTime DateCreated { get; set; } = DateTime.UtcNow;
     
-    public virtual ICollection<SalesDetail> SalesDetails { get; set; } = new List<SalesDetail>();
-    public virtual ICollection<PaymentSale> PaymentSales { get; set; } = new List<PaymentSale>();
+    public ICollection<SalesDetail> SalesDetails { get; set; } = new List<SalesDetail>();
+    public ICollection<PaymentSale> PaymentSales { get; set; } = new List<PaymentSale>();
 }

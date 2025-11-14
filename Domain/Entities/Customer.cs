@@ -32,5 +32,5 @@ public  class Customer
     public decimal SpecialDiscount { get; set; }
     public bool Active { get; set; } = true;
     public DateTime DateRegistered { get; set; } = DateTime.UtcNow;
-    public virtual ICollection<Sale> Sales { get; set; } = new List<Sale>();
+    public ICollection<Sale> Sales { get; set; } = new List<Sale>();
 }

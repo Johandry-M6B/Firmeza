@@ -32,13 +32,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Areas\SalesController\Controllers\" />
-      <Folder Include="Areas\SalesController\Data\" />
-      <Folder Include="Areas\SalesController\Models\" />
-      <Folder Include="Areas\SalesController\Views\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
@@ -46,6 +39,12 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Domain\Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="MediatR">
+        <HintPath>..\..\..\.nuget\packages\mediatr\13.1.0\lib\net8.0\MediatR.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

@@ -83,9 +83,9 @@ public  class Product
     public DateTime DateCreated { get; private set; } = DateTime.UtcNow;
     public DateTime? DateUpdated { get; private set; }
 
-    public virtual ICollection<SalesDetail> SalesDetails { get; private set; } = new List<SalesDetail>();
+    public ICollection<SalesDetail> SalesDetails { get; private set; } = new List<SalesDetail>();
 
-    public virtual ICollection<InventoryMovement> InventoryMovements { get; private set; } =
+    public ICollection<InventoryMovement> InventoryMovements { get; private set; } =
         new List<InventoryMovement>();
 
     private Product()

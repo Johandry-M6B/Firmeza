@@ -20,5 +20,5 @@ public  class Supplier
     public string City { get; set; }
     public bool Active { get; set; } = true;
     public DateTime DateCreated { get; set; } = DateTime.UtcNow;
-    public virtual ICollection<Product> Products { get; set; } = [];
+    public ICollection<Product> Products { get; set; } = [];
 }

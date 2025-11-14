@@ -10,5 +10,5 @@ public  class Measurement
    
     public string Abbreviation { get; set; } = null!;
     public bool Active { get; set; } = true;
-    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
+    public  ICollection<Product> Products { get; set; } = new List<Product>();
 }

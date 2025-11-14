@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Firmeza.Web.Data;
 using Firmeza.Web.Data.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Firmeza.Web.Controllers
@@ -24,7 +25,10 @@ namespace Firmeza.Web.Controllers
         // GET: Products
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Products.Include(p => p.Category).Include(p => p.Measurement).Include(p => p.Supplier);
+            var applicationDbContext = _context.Products.Include(p => p.Category)
+                .Include(p => p.Measurement)
+                .Include(p => p.Supplier);
+            
             return View(await applicationDbContext.ToListAsync());
         }
 
