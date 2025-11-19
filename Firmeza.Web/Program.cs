@@ -1,32 +1,38 @@
+using Application;
 using Firmeza.Web.Data;
 using Firmeza.Web.Data.Entities;
 using Firmeza.Web.Filters;
-using Firmeza.Web.Services;
+using Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ApplicationDbContext = Infrastructure.Persistence.ApplicationDbContext;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// ============================================
+// SERVICIOS DE CLEAN ARCHITECTURE
+// ============================================
+
+// Registrar Application (MediatR, AutoMapper, Validators)
+builder.Services.AddApplication();
+
+// Registrar Infrastructure (Repositorios, DbContext, Servicios)
+builder.Services.AddInfrastructure(builder.Configuration);
+
+// ============================================
+// SERVICIOS DE MVC Y RAZOR PAGES
+// ============================================
+
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.Add<DomainExceptionFilter>();
 });
-// Configurar DbContext con PostgreSQL
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        npgsqlOptions =>
-        {
-            npgsqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(10),
-                errorCodesToAdd: null
-            );
-        }
-    )
-);
+
+// ============================================
+// SESIÓN Y CACHE
+// ============================================
+
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -34,10 +40,11 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
-builder.Services.AddScoped<IExcelImportService, ExcelImportService>();
-builder.Services.AddScoped<IPdfInvoiceService, PdfInvoiceService>();
-builder.Services.AddScoped<IExcelImportService, ExcelImportService>();
-// Configurar Identity
+
+// ============================================
+// IDENTITY
+// ============================================
+
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 {
     // Password settings
@@ -57,7 +64,7 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
     options.SignIn.RequireConfirmedAccount = false;
     options.SignIn.RequireConfirmedEmail = false;
 })
-.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddEntityFrameworkStores<Infrastructure.Persistence.ApplicationDbContext>()
 .AddDefaultTokenProviders()
 .AddDefaultUI();
 
@@ -71,37 +78,62 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
-// Agregar política de autorización para administradores
+// ============================================
+// AUTORIZACIÓN
+// ============================================
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("RequireAdministratorRole", policy => 
         policy.RequireRole(UserRoles.Admin));
 });
 
+// ============================================
+// BUILD APP
+// ============================================
+
 var app = builder.Build();
 
-// Seed de datos iniciales (Rol Admin y Usuario Admin)
+// ============================================
+// SEED DE DATOS INICIALES
+// ============================================
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
+        // Ejecutar migraciones pendientes
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        await context.Database.MigrateAsync();
+
+        // Seed de roles y usuario admin
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
         await IdentitySeeder.SeedAsync(userManager, roleManager);
+        
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("Base de datos inicializada correctamente");
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Error al crear rol y usuario administrador");
+        logger.LogError(ex, "Error al inicializar la base de datos");
     }
 }
 
-// Configure the HTTP request pipeline.
+// ============================================
+// CONFIGURAR MIDDLEWARE PIPELINE
+// ============================================
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
+}
+else
+{
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseHttpsRedirection();

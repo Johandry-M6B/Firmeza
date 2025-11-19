@@ -1,15 +1,14 @@
 // Firmeza.Infrastructure/DependencyInjection.cs
 
 using Domain.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Microsoft.EntityFrameworkCore;
 using Infrastructure.Persistence;
-using Firmeza.Infrastructure.Services;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Firmeza.Infrastructure;
+namespace Infrastructure;
 
 public static class DependencyInjection
 {

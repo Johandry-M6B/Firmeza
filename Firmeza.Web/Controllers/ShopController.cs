@@ -1,6 +1,7 @@
 using Firmeza.Web.Data;
 using Firmeza.Web.Data.Entities;
 using Firmeza.Web.Models.ViewModels;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,18 +11,18 @@ namespace Firmeza.Web.Controllers
     [AllowAnonymous] // ⬅️ Permite acceso sin login
     public class ShopController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IMediator _mediator;
         private const string CartSessionKey = "ShoppingCart";
 
-        public ShopController(ApplicationDbContext context)
+        public ShopController(IMediator mediator)
         {
-            _context = context;
+            _mediator = mediator;
         }
 
         // GET: /Shop
         public async Task<IActionResult> Index(string searchTerm, int? categoryId)
         {
-            var query = _context.Products
+            var query = _mediator.Products
                 .Include(p => p.Category)
                 .Include(p => p.Measurement)
                 .Where(p => p.Active && p.CurrentStock > 0);
@@ -42,7 +43,7 @@ namespace Firmeza.Web.Controllers
             }
 
             var products = await query.OrderBy(p => p.Name).ToListAsync();
-            var categories = await _context.Categories
+            var categories = await _mediator.Categories
                 .Where(c => c.Active)
                 .OrderBy(c => c.Name)
                 .ToListAsync();
@@ -61,7 +62,7 @@ namespace Firmeza.Web.Controllers
         // GET: /Shop/Product/5
         public async Task<IActionResult> Product(int id)
         {
-            var product = await _context.Products
+            var product = await _mediator.Products
                 .Include(p => p.Category)
                 .Include(p => p.Measurement)
                 .Include(p => p.Supplier)
@@ -79,7 +80,7 @@ namespace Firmeza.Web.Controllers
         [HttpPost]
         public IActionResult AddToCart(int productId, int quantity = 1)
         {
-            var product = _context.Products
+            var product = _mediator.Products
                 .Include(p => p.Measurement)
                 .FirstOrDefault(p => p.Id == productId);
 
@@ -221,7 +222,7 @@ namespace Firmeza.Web.Controllers
             try
             {
                 // Crear o buscar cliente
-                var customer = await _context.Customers
+                var customer = await _mediator.Customers
                     .FirstOrDefaultAsync(c => c.DocumentNumber == model.DocumentNumber);
 
                 if (customer == null)
@@ -236,12 +237,12 @@ namespace Firmeza.Web.Controllers
                         TypeCustomer = TypeCustomer.Retail,
                         Active = true
                     };
-                    _context.Customers.Add(customer);
-                    await _context.SaveChangesAsync();
+                    _mediator.Customers.Add(customer);
+                    await _mediator.SaveChangesAsync();
                 }
 
                 // Generar número de factura
-                var lastSale = await _context.Sales
+                var lastSale = await _mediator.Sales
                     .OrderByDescending(s => s.Id)
                     .FirstOrDefaultAsync();
                 
@@ -268,13 +269,13 @@ namespace Firmeza.Web.Controllers
                     Observations = model.Observations
                 };
 
-                _context.Sales.Add(sale);
-                await _context.SaveChangesAsync();
+                _mediator.Sales.Add(sale);
+                await _mediator.SaveChangesAsync();
 
                 // Crear detalles de venta
                 foreach (var item in cart.Items)
                 {
-                    var product = await _context.Products.FindAsync(item.ProductId);
+                    var product = await _mediator.Products.FindAsync(item.ProductId);
 
                     if (product == null || product.CurrentStock < item.Quantity)
                     {
@@ -294,7 +295,7 @@ namespace Firmeza.Web.Controllers
                         Total = item.Total
                     };
 
-                    _context.SalesDetails.Add(detail);
+                    _mediator.SalesDetails.Add(detail);
 
                     // Actualizar stock
                     product.CurrentStock -= item.Quantity;
@@ -311,10 +312,10 @@ namespace Firmeza.Web.Controllers
                         Observation = $"Venta Online - Factura {invoiceNumber}"
                     };
 
-                    _context.InventoryMovements.Add(movement);
+                    _mediator.InventoryMovements.Add(movement);
                 }
 
-                await _context.SaveChangesAsync();
+                await _mediator.SaveChangesAsync();
 
                 // Limpiar carrito
                 ClearCart();
@@ -333,7 +334,7 @@ namespace Firmeza.Web.Controllers
         // GET: /Shop/OrderConfirmation/5
         public async Task<IActionResult> OrderConfirmation(int id)
         {
-            var sale = await _context.Sales
+            var sale = await _mediator.Sales
                 .Include(s => s.Customer)
                 .Include(s => s.SalesDetails)
                     .ThenInclude(d => d.Product)

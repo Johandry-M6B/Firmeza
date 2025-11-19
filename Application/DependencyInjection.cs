@@ -4,12 +4,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Application;
 
-public class DependencyInjection
+public static class DependencyInjection
 {
-    public static IServiceCollection AddApplication(IServiceCollection services)
+    public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         // Registrar MediatR
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+        services.AddMediatR(cfg => 
+            cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
         // Registrar AutoMapper
         services.AddAutoMapper(Assembly.GetExecutingAssembly());

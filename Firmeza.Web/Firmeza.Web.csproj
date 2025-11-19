@@ -10,6 +10,8 @@
     <ItemGroup>
       <PackageReference Include="ClosedXML" Version="0.105.0" />
       <PackageReference Include="EPPlus" Version="8.2.1" />
+      <PackageReference Include="MediatR" Version="13.1.0" />
+      <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
       <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.21" />
       <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.21" />
       <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.21" />
@@ -38,7 +40,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Application\Application.csproj" />
       <ProjectReference Include="..\Domain\Domain.csproj" />
+      <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
     </ItemGroup>
 
     <ItemGroup>

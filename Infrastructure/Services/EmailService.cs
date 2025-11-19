@@ -4,7 +4,7 @@ using Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace Firmeza.Infrastructure.Services;
+namespace Infrastructure.Services;
 
 public class EmailService : IEmailService
 {

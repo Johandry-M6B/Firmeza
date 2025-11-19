@@ -1,4 +1,4 @@
-using Firmeza.Web.Data.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Category = Domain.Entities.Category;
@@ -13,7 +13,7 @@ using Supplier = Domain.Entities.Supplier;
 
 namespace Infrastructure.Persistence;
 
-public class ApplicationDbContext: IdentityDbContext<ApplicationUser, ApplicationRole, string> 
+public class ApplicationDbContext: IdentityDbContext<IdentityUser, IdentityRole, string> 
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) :
         base(options)

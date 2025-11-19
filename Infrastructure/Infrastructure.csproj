@@ -19,7 +19,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Firmeza.Web\Firmeza.Web.csproj" />
+      <ProjectReference Include="../Domain/Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
 </Project>
