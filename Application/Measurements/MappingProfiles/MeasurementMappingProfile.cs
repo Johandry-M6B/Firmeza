@@ -1,9 +1,10 @@
 // Firmeza.Application/Measurements/MappingProfiles/MeasurementMappingProfile.cs
+
+using Application.Measurements.DTOs;
 using AutoMapper;
 using Domain.Entities;
-using Firmeza.Application.Measurements.DTOs;
 
-namespace Firmeza.Application.Measurements.MappingProfiles;
+namespace Application.Measurements.MappingProfiles;
 
 public class MeasurementMappingProfile : Profile
 {

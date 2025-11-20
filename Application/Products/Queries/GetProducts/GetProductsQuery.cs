@@ -1,7 +1,7 @@
 using Application.Products.DTOs;
 using MediatR;
 
-namespace Application.Products.Queries.GetProductById;
+namespace Application.Products.Queries.GetProducts;
 
 public class GetProductsQuery : IRequest<IEnumerable<ProductDto>>
 {

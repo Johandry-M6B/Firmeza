@@ -1,12 +1,12 @@
 // Firmeza.Application/Measurements/Queries/GetMeasurements/GetMeasurementsQueryHandler.cs
 
+using Application.Measurements.DTOs;
 using Application.Products.Queries.GetMeasurements;
-using MediatR;
 using AutoMapper;
 using Domain.Interfaces;
-using Firmeza.Application.Measurements.DTOs;
+using MediatR;
 
-namespace Firmeza.Application.Measurements.Queries.GetMeasurements;
+namespace Application.Measurements.Queries.GetMeasurements;
 
 public class GetMeasurementsQueryHandler : IRequestHandler<GetMeasurementsQuery, IEnumerable<MeasurementDto>>
 {

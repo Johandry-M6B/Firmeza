@@ -18,9 +18,4 @@
       <ProjectReference Include="..\Domain\Domain.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Measurements\Queries\" />
-      <Folder Include="Products\Queries\GetMeasurements\" />
-    </ItemGroup>
-
 </Project>

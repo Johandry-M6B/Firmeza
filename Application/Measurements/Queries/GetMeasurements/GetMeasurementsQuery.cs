@@ -1,5 +1,5 @@
 using System.Diagnostics.Metrics;
-using Firmeza.Application.Measurements.DTOs;
+using Application.Measurements.DTOs;
 using MediatR;
 
 namespace Application.Products.Queries.GetMeasurements;

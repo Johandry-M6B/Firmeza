@@ -1,159 +1,161 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+// Firmeza.Web/Controllers/SuppliersController.cs
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Firmeza.Web.Data;
-using Firmeza.Web.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
+using MediatR;
+using Firmeza.Application.Suppliers.Commands.CreateSupplier;
+using Firmeza.Application.Suppliers.Commands.UpdateSupplier;
+using Firmeza.Application.Suppliers.Commands.DeleteSupplier;
+using Firmeza.Application.Suppliers.Queries.GetSupwpliers;
+using Firmeza.Application.Suppliers.Queries.GetSupplierById;
+using Firmeza.Web.Data.Entities;
 
-namespace Firmeza.Web.Controllers
+namespace Firmeza.Web.Controllers;
+
+[Authorize(Roles = UserRoles.Admin)]
+public class SuppliersController : Controller
 {
-    [Authorize(Roles = UserRoles.Admin)]
-    public class SuppliersController : Controller
+    private readonly IMediator _mediator;
+
+    public SuppliersController(IMediator mediator)
     {
-        private readonly ApplicationDbContext _context;
+        _mediator = mediator;
+    }
 
-        public SuppliersController(ApplicationDbContext context)
+    public async Task<IActionResult> Index(string searchTerm)
+    {
+        var query = new GetSuppliersQuery
         {
-            _context = context;
+            SearchTerm = searchTerm,
+            OnlyActive = false
+        };
+
+        var suppliers = await _mediator.Send(query);
+        ViewBag.SearchTerm = searchTerm;
+        
+        return View(suppliers);
+    }
+
+    public async Task<IActionResult> Details(int id)
+    {
+        var query = new GetSupplierByIdQuery(id);
+        var supplier = await _mediator.Send(query);
+
+        if (supplier == null)
+        {
+            return NotFound();
         }
 
-        // GET: Suppliers
-        public async Task<IActionResult> Index()
+        return View(supplier);
+    }
+
+    public IActionResult Create()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(CreateSupplierCommand command)
+    {
+        if (!ModelState.IsValid)
         {
-            return View(await _context.Suppliers.ToListAsync());
+            return View(command);
         }
 
-        // GET: Suppliers/Details/5
-        public async Task<IActionResult> Details(int? id)
+        try
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var supplier = await _context.Suppliers
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (supplier == null)
-            {
-                return NotFound();
-            }
-
-            return View(supplier);
-        }
-
-        // GET: Suppliers/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Suppliers/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,TradeName,Nit,ContactName,PhoneNumber,Email,Address,City,Active,DateCreated")] Supplier supplier)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(supplier);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(supplier);
-        }
-
-        // GET: Suppliers/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var supplier = await _context.Suppliers.FindAsync(id);
-            if (supplier == null)
-            {
-                return NotFound();
-            }
-            return View(supplier);
-        }
-
-        // POST: Suppliers/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,TradeName,Nit,ContactName,PhoneNumber,Email,Address,City,Active,DateCreated")] Supplier supplier)
-        {
-            if (id != supplier.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(supplier);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!SupplierExists(supplier.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(supplier);
-        }
-
-        // GET: Suppliers/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var supplier = await _context.Suppliers
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (supplier == null)
-            {
-                return NotFound();
-            }
-
-            return View(supplier);
-        }
-
-        // POST: Suppliers/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var supplier = await _context.Suppliers.FindAsync(id);
-            if (supplier != null)
-            {
-                _context.Suppliers.Remove(supplier);
-            }
-
-            await _context.SaveChangesAsync();
+            await _mediator.Send(command);
+            TempData["SuccessMessage"] = "Proveedor creado exitosamente";
             return RedirectToAction(nameof(Index));
         }
-
-        private bool SupplierExists(int id)
+        catch (Exception ex)
         {
-            return _context.Suppliers.Any(e => e.Id == id);
+            ModelState.AddModelError("", ex.Message);
+            return View(command);
+        }
+    }
+
+    public async Task<IActionResult> Edit(int id)
+    {
+        var query = new GetSupplierByIdQuery(id);
+        var supplier = await _mediator.Send(query);
+
+        if (supplier == null)
+        {
+            return NotFound();
+        }
+
+        var command = new UpdateSupplierCommand
+        {
+            Id = supplier.Id,
+            TradeName = supplier.TradeName,
+            Nit = supplier.Nit,
+            ContactName = supplier.ContactName,
+            PhoneNumber = supplier.PhoneNumber,
+            Email = supplier.Email,
+            Address = supplier.Address,
+            City = supplier.City
+        };
+
+        return View(command);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, UpdateSupplierCommand command)
+    {
+        if (id != command.Id)
+        {
+            return NotFound();
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(command);
+        }
+
+        try
+        {
+            await _mediator.Send(command);
+            TempData["SuccessMessage"] = "Proveedor actualizado exitosamente";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError("", ex.Message);
+            return View(command);
+        }
+    }
+
+    public async Task<IActionResult> Delete(int id)
+    {
+        var query = new GetSupplierByIdQuery(id);
+        var supplier = await _mediator.Send(query);
+
+        if (supplier == null)
+        {
+            return NotFound();
+        }
+
+        return View(supplier);
+    }
+
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        try
+        {
+            var command = new DeleteSupplierCommand { Id = id };
+            await _mediator.Send(command);
+            
+            TempData["SuccessMessage"] = "Proveedor eliminado exitosamente";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+            return RedirectToAction(nameof(Index));
         }
     }
 }

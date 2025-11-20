@@ -1,5 +1,5 @@
 // Firmeza.Application/Measurements/DTOs/MeasurementDto.cs
-namespace Firmeza.Application.Measurements.DTOs;
+namespace Application.Measurements.DTOs;
 
 public class MeasurementDto
 {

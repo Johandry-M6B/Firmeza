@@ -1,159 +1,162 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+// Firmeza.Web/Controllers/CustomersController.cs
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Firmeza.Web.Data;
-using Firmeza.Web.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
+using MediatR;
+using Firmeza.Application.Customers.Commands.CreateCustomer;
+using Firmeza.Application.Customers.Commands.UpdateCustomer;
+using Firmeza.Application.Customers.Commands.DeleteCustomer;
+using Firmeza.Application.Customers.Queries.GetCustomers;
+using Firmeza.Application.Customers.Queries.GetCustomerById;
+using Firmeza.Web.Data.Entities;
 
-namespace Firmeza.Web.Controllers
+
+namespace Firmeza.Web.Controllers;
+
+[Authorize(Roles = UserRoles.Admin)]
+public class CustomersController : Controller
 {
-    [Authorize(Roles = UserRoles.Admin)]
-    public class CustomerController : Controller
+    private readonly IMediator _mediator;
+
+    public CustomersController(IMediator mediator)
     {
-        private readonly ApplicationDbContext _context;
+        _mediator = mediator;
+    }
 
-        public CustomerController(ApplicationDbContext context)
+    public async Task<IActionResult> Index(string searchTerm)
+    {
+        var query = new GetCustomersQuery
         {
-            _context = context;
+            SearchTerm = searchTerm,
+            OnlyActive = false
+        };
+
+        var customers = await _mediator.Send(query);
+        ViewBag.SearchTerm = searchTerm;
+        
+        return View(customers);
+    }
+
+    public async Task<IActionResult> Details(int id)
+    {
+        var query = new GetCustomerByIdQuery(id);
+        var customer = await _mediator.Send(query);
+
+        if (customer == null)
+        {
+            return NotFound();
         }
 
-        // GET: Customer
-        public async Task<IActionResult> Index()
+        return View(customer);
+    }
+
+    public IActionResult Create()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(CreateCustomerCommand command)
+    {
+        if (!ModelState.IsValid)
         {
-            return View(await _context.Customers.ToListAsync());
+            return View(command);
         }
 
-        // GET: Customer/Details/5
-        public async Task<IActionResult> Details(int? id)
+        try
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var customer = await _context.Customers
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (customer == null)
-            {
-                return NotFound();
-            }
-
-            return View(customer);
-        }
-
-        // GET: Customer/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Customer/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,TypeCustomer,FullName,Nit,DocumentNumber,PhoneNumber,Email,City,Country,CreditLimit,DaysToPay,SpecialDiscount,Active,DateRegistered")] Customer customer)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(customer);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(customer);
-        }
-
-        // GET: Customer/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var customer = await _context.Customers.FindAsync(id);
-            if (customer == null)
-            {
-                return NotFound();
-            }
-            return View(customer);
-        }
-
-        // POST: Customer/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,TypeCustomer,FullName,Nit,DocumentNumber,PhoneNumber,Email,City,Country,CreditLimit,DaysToPay,SpecialDiscount,Active,DateRegistered")] Customer customer)
-        {
-            if (id != customer.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(customer);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CustomerExists(customer.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(customer);
-        }
-
-        // GET: Customer/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var customer = await _context.Customers
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (customer == null)
-            {
-                return NotFound();
-            }
-
-            return View(customer);
-        }
-
-        // POST: Customer/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var customer = await _context.Customers.FindAsync(id);
-            if (customer != null)
-            {
-                _context.Customers.Remove(customer);
-            }
-
-            await _context.SaveChangesAsync();
+            await _mediator.Send(command);
+            TempData["SuccessMessage"] = "Cliente creado exitosamente";
             return RedirectToAction(nameof(Index));
         }
-
-        private bool CustomerExists(int id)
+        catch (Exception ex)
         {
-            return _context.Customers.Any(e => e.Id == id);
+            ModelState.AddModelError("", ex.Message);
+            return View(command);
+        }
+    }
+
+    public async Task<IActionResult> Edit(int id)
+    {
+        var query = new GetCustomerByIdQuery(id);
+        var customer = await _mediator.Send(query);
+
+        if (customer == null)
+        {
+            return NotFound();
+        }
+
+        var command = new UpdateCustomerCommand
+        {
+            Id = customer.Id,
+            FullName = customer.FullName,
+            DocumentNumber = customer.DocumentNumber,
+            TypeCustomer = customer.TypeCustomer,
+            PhoneNumber = customer.PhoneNumber,
+            Email = customer.Email,
+            City = customer.City,
+            Country = customer.Country
+        };
+
+        return View(command);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, UpdateCustomerCommand command)
+    {
+        if (id != command.Id)
+        {
+            return NotFound();
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(command);
+        }
+
+        try
+        {
+            await _mediator.Send(command);
+            TempData["SuccessMessage"] = "Cliente actualizado exitosamente";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError("", ex.Message);
+            return View(command);
+        }
+    }
+
+    public async Task<IActionResult> Delete(int id)
+    {
+        var query = new GetCustomerByIdQuery(id);
+        var customer = await _mediator.Send(query);
+
+        if (customer == null)
+        {
+            return NotFound();
+        }
+
+        return View(customer);
+    }
+
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        try
+        {
+            var command = new DeleteCustomerCommand { Id = id };
+            await _mediator.Send(command);
+            
+            TempData["SuccessMessage"] = "Cliente desactivado exitosamente";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+            return RedirectToAction(nameof(Index));
         }
     }
 }

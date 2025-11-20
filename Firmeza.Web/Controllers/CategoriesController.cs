@@ -1,6 +1,7 @@
 // Firmeza.Web/Controllers/CategoriesController.cs
 
 using Application.Categories.Queries.GetCategories;
+using Application.Categories.Queries.GetCategoryById;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using MediatR;
