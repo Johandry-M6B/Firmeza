@@ -4,6 +4,7 @@ using Application.Suppliers.Commands.CreateSuppliers;
 using Application.Suppliers.Commands.DeleteSuppliers;
 using Application.Suppliers.Commands.UpdateSupplier;
 using Application.Suppliers.Queries.GetSupplierById;
+using Domain.Enums;
 using Firmeza.Application.Suppliers.Queries.GetSuppliers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;

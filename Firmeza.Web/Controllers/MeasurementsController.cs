@@ -5,6 +5,7 @@ using Application.Measurements.Commands.UpdateMeasurements;
 using Application.Measurements.Queries.CreateMeasurement;
 using Application.Measurements.Queries.GetMeasurementById;
 using Application.Products.Queries.GetMeasurements;
+using Domain.Enums;
 using Firmeza.Web.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;

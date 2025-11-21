@@ -8,15 +8,15 @@ namespace Domain.Entities;
 public  class Product
 {
      public int Id { get; private set; }
-     public string Code { get; private set; }
-      public string Name { get; private set; }
-    public string Description { get; private set; }
-    public int CategoryId { get; private set; }
+     public string Code { get; set; }
+      public string Name { get; set; }
+    public string Description { get; set; }
+    public int CategoryId { get; set; }
     public Category Category { get; private set; }
-     public int MeasurementId { get; private set; }
+     public int MeasurementId { get; set; }
    public Measurement Measurement { get; private set; }
 
-    public int? SupplierId { get; private set; }
+    public int? SupplierId { get; set; }
      public Supplier Supplier { get; private set; }
 
     //Price e Inventory
@@ -26,7 +26,7 @@ public  class Product
     public decimal BuyerPrice
     {
         get => _buyerPrice;
-        private set
+        set
         {
             if (value < 0 || value == 0)
                 throw new InvalidPriceException(value);
@@ -41,7 +41,7 @@ public  class Product
     public decimal SalePrice
     {
         get => _salePrice;
-        private set
+        set
         {
             if (value < 0 || value == 0)
                 throw new InvalidPriceException(value);
@@ -58,7 +58,7 @@ public  class Product
     public decimal WholesalePrice
     {
         get => _wholesalePrice;
-        private set
+        set
         {
             if (value < 0 || value == 0)
                 throw new InvalidPriceException(value);
@@ -67,21 +67,21 @@ public  class Product
         }
     }
 
-    public int CurrentStock { get; private set; }
-    public int MinimumStock { get; private set; }
+    public int CurrentStock { get; set; }
+    public int MinimumStock { get; set; }
 
-    public string? Mark { get; private set; }
-     public string? Model { get; private set; }
-    public string? Color { get; private set; }
-     public decimal? Weight { get; private set; } // in Kg
-     public string? Size { get; private set; } // E.g: 2m x 1m
+    public string? Mark { get; set; }
+     public string? Model { get; set; }
+    public string? Color { get; set; }
+     public decimal? Weight { get; set; } // in Kg
+     public string? Size { get; set; } // E.g: 2m x 1m
 
     //Control
-    public bool RequiredRefrigeration { get; private set; } = false;
-    public bool DangerousMaterial { get; private set; } = false;
-    public bool Active { get; private set; } = true;
+    public bool RequiredRefrigeration { get; set; } = false;
+    public bool DangerousMaterial { get; set; } = false;
+    public bool Active { get; set; } = true;
     public DateTime DateCreated { get; private set; } = DateTime.UtcNow;
-    public DateTime? DateUpdated { get; private set; }
+    public DateTime? DateUpdated { get; set; }
 
     public ICollection<SalesDetail> SalesDetails { get; private set; } = new List<SalesDetail>();
 

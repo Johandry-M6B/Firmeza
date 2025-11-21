@@ -1,4 +1,6 @@
+using Domain.Enums;
 using Firmeza.Web.Data.Entities;
+using Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 
 namespace Firmeza.Web.Data;
@@ -7,7 +9,7 @@ public static class IdentitySeeder
 {
     public static async Task SeedAsync(
         UserManager<ApplicationUser> userManager,
-        RoleManager<ApplicationRole> roleManager)
+        RoleManager<IdentityRole> roleManager)
     {
         if (!await roleManager.RoleExistsAsync(UserRoles.Admin))
         {

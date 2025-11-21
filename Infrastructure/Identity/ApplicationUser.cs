@@ -1,13 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 
-namespace Firmeza.Web.Data.Entities;
+namespace Infrastructure.Identity;
 
-public static class UserRoles
-{
-    public const string Admin = "Admin"; 
-    
-}
 public class ApplicationUser: IdentityUser
 {
     [Required]

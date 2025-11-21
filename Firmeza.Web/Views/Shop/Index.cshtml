@@ -1,4 +1,4 @@
-@model Firmeza.Web.Models.ViewModels.ShopIndexViewModel
+@model ShopIndexViewModel
 @{
     ViewData["Title"] = "Tienda - Materiales de Construcción";
     Layout = "~/Views/Shared/_ShopLayout.cshtml";
@@ -76,7 +76,7 @@
                         <div class="col">
                             <div class="card h-100 shadow-sm product-card">
                                 <div class="card-body">
-                                    <span class="badge bg-info mb-2">@product.Category.Name</span>
+                                    <span class="badge bg-info mb-2">@product.CategoryName</span>
                                     
                                     @if (product.CurrentStock < product.MinimumStock)
                                     {
@@ -92,7 +92,7 @@
                                     
                                     <div class="mb-2">
                                         <small class="text-muted">
-                                            <i class="bi bi-box"></i> Stock: @product.CurrentStock @product.Measurement.Abbreviation
+                                            <i class="bi bi-box"></i> Stock: @product.CurrentStock @product.MeasurementName
                                         </small>
                                     </div>
                                     
@@ -100,7 +100,7 @@
                                         <h4 class="text-primary mb-0">
                                             $@product.SalePrice.ToString("N0")
                                             <small class="text-muted" style="font-size: 0.6em;">
-                                                /@product.Measurement.Abbreviation
+                                                /@product.MeasurementName
                                             </small>
                                         </h4>
                                     </div>

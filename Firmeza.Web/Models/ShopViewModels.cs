@@ -1,13 +1,15 @@
 using System.ComponentModel.DataAnnotations;
+using Application.Categories.DTOs;
+using Application.Products.DTOs;
 using Firmeza.Web.Data.Entities;
 
-namespace Firmeza.Web.Models.ViewModels
+namespace Firmeza.Web.Models
 {
     // ViewModel para la página principal de la tienda
     public class ShopIndexViewModel
     {
-        public List<Product> Products { get; set; } = new();
-        public List<Category> Categories { get; set; } = new();
+        public List<ProductDto> Products { get; set; } = new();
+        public List<CategoryDto> Categories { get; set; } = new();
         public string? SearchTerm { get; set; }
         public int? SelectedCategoryId { get; set; }
     }

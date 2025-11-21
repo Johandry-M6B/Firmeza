@@ -1,202 +1,146 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
+using Application.Customers.Queries.GetCustomers;
+using Application.Products.Queries.GetProducts;
+using Application.Sales.Commands.AddPayment;
+using Application.Sales.Commands.CancelSale;
+using Application.Sales.Commands.CreateSale;
+using Application.Sales.Queries.GetSaleById;
+using Application.Sales.Queries.GetSales;
+using Domain.Enums;
+using Firmeza.Web.Data.Entities;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Firmeza.Web.Data;
-using Firmeza.Web.Data.Entities;
-using Firmeza.Web.Services;
-using Microsoft.AspNetCore.Authorization;
 
-namespace Firmeza.Web.Controllers
+namespace Firmeza.Web.Controllers;
+
+[Authorize(Roles = UserRoles.Admin)]
+public class SalesController : Controller
 {
-    [Authorize(Roles = UserRoles.Admin)]
-    public class SalesController : Controller
+    private readonly IMediator _mediator;
+
+    public SalesController(IMediator mediator)
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IPdfInvoiceService _pdfInvoiceService;
+        _mediator = mediator;
+    }
 
-        public SalesController(
-            ApplicationDbContext context,
-            IPdfInvoiceService pdfInvoiceService )
+    // GET: Sales
+    public async Task<IActionResult> Index(DateTime? startDate, DateTime? endDate, int? customerId)
+    {
+        var query = new GetSalesQuery
         {
-            _context = context;
-            _pdfInvoiceService = pdfInvoiceService;
+            StartDate = startDate,
+            EndDate = endDate,
+            CustomerId = customerId
+        };
+
+        var sales = await _mediator.Send(query);
+        
+        // Cargar clientes para filtro
+        var customers = await _mediator.Send(new GetCustomersQuery { OnlyActive = true });
+        ViewBag.Customers = new SelectList(customers, "Id", "FullName");
+        ViewBag.StartDate = startDate;
+        ViewBag.EndDate = endDate;
+        ViewBag.SelectedCustomerId = customerId;
+        
+        return View(sales);
+    }
+
+    // GET: Sales/Details/5
+    public async Task<IActionResult> Details(int id)
+    {
+        var query = new GetSaleByIdQuery(id);
+        var sale = await _mediator.Send(query);
+
+        if (sale == null)
+        {
+            return NotFound();
         }
 
-        // GET: Sales
-        public async Task<IActionResult> Index()
+        return View(sale);
+    }
+
+    // GET: Sales/Create
+    public async Task<IActionResult> Create()
+    {
+        await LoadSelectLists();
+        return View();
+    }
+
+    // POST: Sales/Create
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(CreateSaleCommand command)
+    {
+        if (!ModelState.IsValid)
         {
-            var applicationDbContext = _context.Sales.Include(s => s.Customer);
-            return View(await applicationDbContext.ToListAsync());
+            await LoadSelectLists();
+            return View(command);
         }
 
-        // GET: Sales/Details/5
-        public async Task<IActionResult> Details(int? id)
+        try
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var sale = await _context.Sales
-                .Include(s => s.Customer)
-                .Include(s => s.SalesDetails)
-                .ThenInclude(d => d.Product)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (sale == null)
-            {
-                return NotFound();
-            }
-
-            return View(sale);
+            var saleId = await _mediator.Send(command);
+            TempData["SuccessMessage"] = "Venta registrada exitosamente";
+            return RedirectToAction(nameof(Details), new { id = saleId });
         }
-
-        // GET: Sales/Create
-        public IActionResult Create()
+        catch (Exception ex)
         {
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "DocumentNumber");
-            return View();
+            ModelState.AddModelError("", ex.Message);
+            await LoadSelectLists();
+            return View(command);
         }
+    }
 
-        // POST: Sales/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,InvoiceNumber,Date,CustomerId,SubTotal,Discount,Vat,Total,PaymentFrom,Status,AmountPaid,Balance,FullPaymentDate,DeliveryAddress,DeliveryDate,Devoted,Observations,DateCreated")] Sale sale)
+    // POST: Sales/Cancel/5
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Cancel(int id, string reason)
+    {
+        try
         {
-            if (ModelState.IsValid)
+            var command = new CancelSaleCommand
             {
-                _context.Add(sale);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "DocumentNumber", sale.CustomerId);
-            return View(sale);
+                SaleId = id,
+                Reason = reason
+            };
+            
+            await _mediator.Send(command);
+            TempData["SuccessMessage"] = "Venta cancelada exitosamente";
+            return RedirectToAction(nameof(Details), new { id });
         }
-
-        // GET: Sales/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        catch (Exception ex)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var sale = await _context.Sales.FindAsync(id);
-            if (sale == null)
-            {
-                return NotFound();
-            }
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "DocumentNumber", sale.CustomerId);
-            return View(sale);
+            TempData["ErrorMessage"] = ex.Message;
+            return RedirectToAction(nameof(Details), new { id });
         }
+    }
 
-        // POST: Sales/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,InvoiceNumber,Date,CustomerId,SubTotal,Discount,Vat,Total,PaymentFrom,Status,AmountPaid,Balance,FullPaymentDate,DeliveryAddress,DeliveryDate,Devoted,Observations,DateCreated")] Sale sale)
+    // POST: Sales/AddPayment
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddPayment(AddPaymentCommand command)
+    {
+        try
         {
-            if (id != sale.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(sale);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!SaleExists(sale.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "DocumentNumber", sale.CustomerId);
-            return View(sale);
+            await _mediator.Send(command);
+            TempData["SuccessMessage"] = "Pago registrado exitosamente";
+            return RedirectToAction(nameof(Details), new { id = command.SaleId });
         }
-
-        // GET: Sales/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        catch (Exception ex)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var sale = await _context.Sales
-                .Include(s => s.Customer)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (sale == null)
-            {
-                return NotFound();
-            }
-
-            return View(sale);
+            TempData["ErrorMessage"] = ex.Message;
+            return RedirectToAction(nameof(Details), new { id = command.SaleId });
         }
+    }
 
-        // POST: Sales/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var sale = await _context.Sales.FindAsync(id);
-            if (sale != null)
-            {
-                _context.Sales.Remove(sale);
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool SaleExists(int id)
-        {
-            return _context.Sales.Any(e => e.Id == id);
-        }
-
-            public async Task<IActionResult> DownloadPdf(int id)
-            {
-                try
-                {
-                    var pdfBytes = await _pdfInvoiceService.GenerateInvoicePdf(id); 
-                    var fileName = $"Facture_{id}-{DateTime.Now:yyyy MMMM dd}.pdf";
-                    
-                    return File(pdfBytes, "application/pdf", fileName);
-                }
-                catch (Exception ex)
-                {
-                    TempData["ErrorMessage"] = $"Error generating PDF: {ex.Message}";
-                    return RedirectToAction(nameof(Details), new { id });
-                }
-            }
-            public async Task<IActionResult> PrintPdf(int id)
-            {
-                try
-                {
-                    var pdfBytes = await _pdfInvoiceService.GenerateInvoicePdf(id);
-                    return File(pdfBytes, "application/pdf");
-                }
-                catch (Exception ex)
-                {
-                    TempData["ErrorMessage"] = $"Error al generar PDF: {ex.Message}";
-                    return RedirectToAction(nameof(Details), new { id });
-                }
-            }
+    private async Task LoadSelectLists()
+    {
+        var customers = await _mediator.Send(new GetCustomersQuery { OnlyActive = true });
+        var products = await _mediator.Send(new GetProductsQuery { OnlyActive = true });
+        
+        ViewBag.Customers = new SelectList(customers, "Id", "FullName");
+        ViewBag.Products = new SelectList(products, "Id", "Name");
     }
 }

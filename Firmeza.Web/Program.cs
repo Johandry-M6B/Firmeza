@@ -1,8 +1,9 @@
 using Application;
+using Domain.Enums;
 using Firmeza.Web.Data;
-using Firmeza.Web.Data.Entities;
 using Firmeza.Web.Filters;
 using Infrastructure;
+using Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ApplicationDbContext = Infrastructure.Persistence.ApplicationDbContext;
@@ -42,43 +43,6 @@ builder.Services.AddSession(options =>
 });
 
 // ============================================
-// IDENTITY
-// ============================================
-
-builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
-{
-    // Password settings
-    options.Password.RequireDigit = true;
-    options.Password.RequireLowercase = true;
-    options.Password.RequireUppercase = true;
-    options.Password.RequireNonAlphanumeric = true;
-    options.Password.RequiredLength = 8;
-
-    // Lockout settings
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-    options.Lockout.MaxFailedAccessAttempts = 5;
-    options.Lockout.AllowedForNewUsers = true;
-
-    // User settings
-    options.User.RequireUniqueEmail = true;
-    options.SignIn.RequireConfirmedAccount = false;
-    options.SignIn.RequireConfirmedEmail = false;
-})
-.AddEntityFrameworkStores<Infrastructure.Persistence.ApplicationDbContext>()
-.AddDefaultTokenProviders()
-.AddDefaultUI();
-
-// Configurar cookies de autenticación
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.LoginPath = "/Identity/Account/Login";
-    options.LogoutPath = "/Identity/Account/Logout";
-    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
-    options.ExpireTimeSpan = TimeSpan.FromHours(24);
-    options.SlidingExpiration = true;
-});
-
-// ============================================
 // AUTORIZACIÓN
 // ============================================
 
@@ -109,7 +73,7 @@ using (var scope = app.Services.CreateScope())
 
         // Seed de roles y usuario admin
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-        var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         await IdentitySeeder.SeedAsync(userManager, roleManager);
         
         var logger = services.GetRequiredService<ILogger<Program>>();

@@ -1,9 +1,12 @@
-using Firmeza.Web.Data.Entities;
+
+
+
+using Domain.Enums;
 using Firmeza.Web.Models;
+using Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Supabase.Gotrue;
 
 namespace Firmeza.Web.Controllers;
 

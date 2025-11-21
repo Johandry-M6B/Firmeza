@@ -1,11 +1,11 @@
-// Firmeza.Web/Controllers/ShopController.cs
+
 
 using Application.Categories.Queries.GetCategories;
 using Application.Products.Queries.GetProductById;
 using Application.Products.Queries.GetProducts;
-using Microsoft.AspNetCore.Mvc;
+using Firmeza.Web.Models;
 using MediatR;
-
+using Microsoft.AspNetCore.Mvc;
 
 namespace Firmeza.Web.Controllers;
 
@@ -33,11 +33,16 @@ public class ShopController : Controller
         var categoriesQuery = new GetCategoriesQuery { OnlyActive = true };
         var categories = await _mediator.Send(categoriesQuery);
         
-        ViewBag.Categories = categories;
-        ViewBag.SelectedCategoryId = categoryId;
-        ViewBag.SearchTerm = searchTerm;
+        // Crear el ViewModel con los DTOs
+        var viewModel = new ShopIndexViewModel
+        {
+            Products = products.ToList(),
+            Categories = categories.ToList(),
+            SelectedCategoryId = categoryId,
+            SearchTerm = searchTerm
+        };
         
-        return View(products);
+        return View(viewModel);
     }
 
     public async Task<IActionResult> Details(int id)

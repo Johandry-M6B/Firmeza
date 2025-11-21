@@ -22,7 +22,7 @@ public class SaleRepository : Repository<Sale>, ISaleRepository
 
     
 
-    public async Task<Sale?> GeByidWithDetailsAsync(int id)
+    public async Task<Sale?> GetByIdWithDetailsAsync(int id)
     {
         return await _dbSet
             .Include(s => s.Customer)

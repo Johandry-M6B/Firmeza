@@ -21,7 +21,7 @@ public class PdfService : IPdfService
 
     public async Task<byte[]> GenerateInvoicePdfAsync(int saleId)
     {
-        var sale = await _saleRepository.GeByidWithDetailsAsync(saleId);
+        var sale = await _saleRepository.GetByIdWithDetailsAsync(saleId);
         
         if (sale == null)
             throw new InvalidOperationException($"Sale with ID {saleId} not found");

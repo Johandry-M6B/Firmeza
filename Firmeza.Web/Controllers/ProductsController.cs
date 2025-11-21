@@ -6,6 +6,7 @@ using Application.Products.Commands.DeleteProduct;
 using Application.Products.Queries.GetMeasurements;
 using Application.Products.Queries.GetProductById;
 using Application.Products.Queries.GetProducts;
+using Domain.Enums;
 using Firmeza.Application.Products.Commands.UpdateProduct;
 using Firmeza.Application.Suppliers.Queries.GetSuppliers;
 using Microsoft.AspNetCore.Mvc;
