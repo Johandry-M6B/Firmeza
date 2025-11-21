@@ -1,12 +1,14 @@
-// Firmeza.Web/Controllers/SuppliersController.cs
+
+
+using Application.Suppliers.Commands.CreateSuppliers;
+using Application.Suppliers.Commands.DeleteSuppliers;
+using Application.Suppliers.Commands.UpdateSupplier;
+using Application.Suppliers.Queries.GetSupplierById;
+using Firmeza.Application.Suppliers.Queries.GetSuppliers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using MediatR;
-using Firmeza.Application.Suppliers.Commands.CreateSupplier;
-using Firmeza.Application.Suppliers.Commands.UpdateSupplier;
-using Firmeza.Application.Suppliers.Commands.DeleteSupplier;
-using Firmeza.Application.Suppliers.Queries.GetSupwpliers;
-using Firmeza.Application.Suppliers.Queries.GetSupplierById;
+
 using Firmeza.Web.Data.Entities;
 
 namespace Firmeza.Web.Controllers;

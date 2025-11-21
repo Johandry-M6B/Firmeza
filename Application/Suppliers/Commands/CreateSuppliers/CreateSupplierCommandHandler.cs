@@ -22,6 +22,8 @@ public class CreateSupplierCommandHandler : IRequestHandler<CreateSupplierComman
             ContactName = request.ContactName,
             PhoneNumber = request.PhoneNumber,
             Email = request.Email,
+            Address = request.Address,
+            City =  request.City,
             DateCreated = DateTime.UtcNow
         };
 

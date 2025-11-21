@@ -1,12 +1,13 @@
 // Firmeza.Web/Controllers/CustomersController.cs
+
+using Application.Customers.Commands.CreateCustomer;
+using Application.Customers.Commands.DeleteCustomer;
+using Application.Customers.Commands.UpdateCustomer;
+using Application.Customers.Queries.GetCustomerById;
+using Application.Customers.Queries.GetCustomers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using MediatR;
-using Firmeza.Application.Customers.Commands.CreateCustomer;
-using Firmeza.Application.Customers.Commands.UpdateCustomer;
-using Firmeza.Application.Customers.Commands.DeleteCustomer;
-using Firmeza.Application.Customers.Queries.GetCustomers;
-using Firmeza.Application.Customers.Queries.GetCustomerById;
 using Firmeza.Web.Data.Entities;
 
 

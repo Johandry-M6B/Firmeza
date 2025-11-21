@@ -29,7 +29,7 @@ public  class Customer
     
     public int DaysToPay { get; set; } = 0;
     
-    public decimal SpecialDiscount { get; set; }
+    public decimal? SpecialDiscount { get; set; }
     public bool Active { get; set; } = true;
     public DateTime DateRegistered { get; set; } = DateTime.UtcNow;
     public ICollection<Sale> Sales { get; set; } = new List<Sale>();

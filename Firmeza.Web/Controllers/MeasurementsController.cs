@@ -1,11 +1,15 @@
 // Firmeza.Web/Controllers/MeasurementsController.cs
+
+using Application.Measurements.Commands.DeleteMeasurements;
+using Application.Measurements.Commands.UpdateMeasurements;
+using Application.Measurements.Queries.CreateMeasurement;
+using Application.Measurements.Queries.GetMeasurementById;
+using Application.Products.Queries.GetMeasurements;
+using Firmeza.Web.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using MediatR;
-using Firmeza.Application.Measurements.Commands.CreateMeasurement;
-using Firmeza.Application.Measurements.Commands.UpdateMeasurement;
-using Firmeza.Application.Measurements.Commands.DeleteMeasurement;
-using Firmeza.Application.Measurements.Queries.GetMeasurementById;
+
 
 namespace Firmeza.Web.Controllers;
 

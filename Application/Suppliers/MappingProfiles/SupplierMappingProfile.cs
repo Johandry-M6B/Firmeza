@@ -1,8 +1,8 @@
 // Firmeza.Application/Suppliers/MappingProfiles/SupplierMappingProfile.cs
 
+using Application.Suppliers.DTOs;
 using AutoMapper;
 using Domain.Entities;
-using Firmeza.Application.Suppliers.DTOs;
 
 namespace Application.Suppliers.MappingProfiles;
 

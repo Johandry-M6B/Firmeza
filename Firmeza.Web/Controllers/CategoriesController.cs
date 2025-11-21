@@ -1,14 +1,14 @@
 // Firmeza.Web/Controllers/CategoriesController.cs
 
+using Application.Categories.Commands.CreateCategory;
+using Application.Categories.Commands.DeleteCategory;
+using Application.Categories.Commands.UpdateCategory;
 using Application.Categories.Queries.GetCategories;
 using Application.Categories.Queries.GetCategoryById;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using MediatR;
-using Firmeza.Application.Categories.Commands.UpdateCategory;
-using Firmeza.Application.Categories.Commands.DeleteCategory;
-using Firmeza.Application.Categories.Queries.GetCategories;
-using Firmeza.Application.Categories.Queries.GetCategoryById;
+
 using Firmeza.Web.Data.Entities;
 
 namespace Firmeza.Web.Controllers;

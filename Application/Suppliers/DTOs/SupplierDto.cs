@@ -1,5 +1,5 @@
 // Firmeza.Application/Suppliers/DTOs/SupplierDto.cs
-namespace Firmeza.Application.Suppliers.DTOs;
+namespace Application.Suppliers.DTOs;
 
 public class SupplierDto
 {
@@ -9,7 +9,8 @@ public class SupplierDto
     public string? ContactName { get; set; }
     public string? PhoneNumber { get; set; }
     public string? Email { get; set; }
+    public string? Address { get; set; }
+    public string? City { get; set; }
     public bool Active { get; set; }
-    public  DateTime DateCreated{ get; set; }
-   
+    public DateTime DateCreated { get; set; }
 }

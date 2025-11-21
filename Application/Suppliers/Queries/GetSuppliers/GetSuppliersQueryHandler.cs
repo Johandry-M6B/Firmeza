@@ -1,8 +1,8 @@
 // Firmeza.Application/Suppliers/Queries/GetSuppliers/GetSuppliersQueryHandler.cs
 
+using Application.Suppliers.DTOs;
 using AutoMapper;
 using Domain.Interfaces;
-using Firmeza.Application.Suppliers.DTOs;
 using Firmeza.Application.Suppliers.Queries.GetSuppliers;
 using MediatR;
 
@@ -23,10 +23,20 @@ public class GetSuppliersQueryHandler : IRequestHandler<GetSuppliersQuery, IEnum
 
     public async Task<IEnumerable<SupplierDto>> Handle(GetSuppliersQuery request, CancellationToken cancellationToken)
     {
-        var suppliers = request.OnlyActive
-            ? await _supplierRepository.GetActiveAsync()
-            : await _supplierRepository.GetAllAsync();
+        IEnumerable<Domain.Entities.Supplier> suppliers;
 
+        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+        {
+            suppliers = await _supplierRepository.SearchAsync(request.SearchTerm);
+        }
+        else if (request.OnlyActive)
+        {
+            suppliers = await _supplierRepository.GetActiveAsync();
+        }
+        else
+        {
+            suppliers = await _supplierRepository.GetAllAsync();
+        }
         return _mapper.Map<IEnumerable<SupplierDto>>(suppliers);
     }
 }
