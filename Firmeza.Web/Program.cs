@@ -4,6 +4,7 @@ using Firmeza.Web.Data;
 using Firmeza.Web.Filters;
 using Infrastructure;
 using Infrastructure.Identity;
+using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ApplicationDbContext = Infrastructure.Persistence.ApplicationDbContext;
@@ -65,24 +66,36 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
     try
     {
         // Ejecutar migraciones pendientes
         var context = services.GetRequiredService<ApplicationDbContext>();
+        logger.LogInformation("Base de datos inicializada correctamente");
         await context.Database.MigrateAsync();
-
+        
+        logger.LogInformation("Sembrando datos iniciales...");
+        await ApplicationDbContextSeed.SeedAsync(context);
+        logger.LogInformation("Datos iniciales sembrados correctamente.");
+        
+        logger.LogInformation("Sembrando roles y usuario admin...");
         // Seed de roles y usuario admin
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         await IdentitySeeder.SeedAsync(userManager, roleManager);
+        logger.LogInformation("Datos iniciales roles y usuario admin...");
         
-        var logger = services.GetRequiredService<ILogger<Program>>();
+        
         logger.LogInformation("Base de datos inicializada correctamente");
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "Error al inicializar la base de datos");
+        if (app.Environment.IsDevelopment())
+        {
+            throw;
+        }
+        
     }
 }
 
