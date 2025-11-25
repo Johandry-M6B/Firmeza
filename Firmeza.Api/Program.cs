@@ -149,6 +149,8 @@ if (app.Environment.IsDevelopment())
 // MIDDLEWARE PIPELINE
 // ============================================
 
+app.UseMiddleware<Firmeza.Api.Middlewares.GlobalExceptionHandlerMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

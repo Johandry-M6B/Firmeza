@@ -1,5 +1,6 @@
-// Firmeza.Infrastructure/DependencyInjection.cs
 
+
+using Application.Common.Interfaces;
 using Domain.Interfaces;
 using Infrastructure.Identity;
 using Infrastructure.Persistence;
@@ -56,6 +57,8 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, EmailService>();
         services.AddSingleton<IDateTimeService, DateTimeService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
         // Para CurrentUserService
         services.AddHttpContextAccessor();
