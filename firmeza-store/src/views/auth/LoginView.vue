@@ -77,6 +77,12 @@ const handleLogin = async () => {
             {{ loading ? 'Iniciando sesión...' : 'Iniciar Sesión' }}
           </button>
         </div>
+
+        <div class="text-center">
+          <router-link to="/register" class="text-sm text-indigo-600 hover:text-indigo-500">
+            ¿No tienes cuenta? Regístrate aquí
+          </router-link>
+        </div>
       </form>
     </div>
   </div>

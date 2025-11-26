@@ -19,6 +19,12 @@ public class CustomerRepository : Repository<Customer>, ICustomerRepository
         return await _dbSet
             .FirstOrDefaultAsync(c => c.DocumentNumber == documentNumber);
     }
+
+    public async Task<Customer?> GetByEmailAsync(string email)
+    {
+        return await _dbSet
+            .FirstOrDefaultAsync(c => c.Email == email);
+    }
     public async Task<IEnumerable<Customer>> GetByTypeAsync(TypeCustomer type)
     {
         return await _dbSet
