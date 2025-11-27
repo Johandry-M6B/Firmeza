@@ -6,21 +6,26 @@ using Application.Suppliers.Commands.UpdateSupplier;
 using Application.Suppliers.Queries.GetSupplierById;
 using Domain.Enums;
 using Firmeza.Application.Suppliers.Queries.GetSuppliers;
+using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using MediatR;
 
-using Firmeza.Web.Data.Entities;
+
 
 namespace Firmeza.Web.Controllers;
 
 [Authorize(Roles = UserRoles.Admin)]
 public class SuppliersController : Controller
 {
+    private readonly ApplicationDbContext _context;
     private readonly IMediator _mediator;
 
-    public SuppliersController(IMediator mediator)
+    public SuppliersController(
+        ApplicationDbContext context,
+        IMediator mediator)
     {
+        _context = context;
         _mediator = mediator;
     }
 
@@ -80,27 +85,13 @@ public class SuppliersController : Controller
 
     public async Task<IActionResult> Edit(int id)
     {
-        var query = new GetSupplierByIdQuery(id);
-        var supplier = await _mediator.Send(query);
-
+        var supplier = await _context.Suppliers.FindAsync(id);
         if (supplier == null)
         {
             return NotFound();
         }
-
-        var command = new UpdateSupplierCommand
-        {
-            Id = supplier.Id,
-            TradeName = supplier.TradeName,
-            Nit = supplier.Nit,
-            ContactName = supplier.ContactName,
-            PhoneNumber = supplier.PhoneNumber,
-            Email = supplier.Email,
-            Address = supplier.Address,
-            City = supplier.City
-        };
-
-        return View(command);
+        
+        return View(supplier);
     }
 
     [HttpPost]

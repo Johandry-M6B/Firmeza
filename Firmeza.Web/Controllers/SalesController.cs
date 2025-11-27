@@ -7,7 +7,7 @@ using Application.Sales.Commands.CreateSale;
 using Application.Sales.Queries.GetSaleById;
 using Application.Sales.Queries.GetSales;
 using Domain.Enums;
-using Firmeza.Web.Data.Entities;
+
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

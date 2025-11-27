@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using MediatR;
 
-using Firmeza.Web.Data.Entities;
+
 
 namespace Firmeza.Web.Controllers;
 
@@ -78,22 +78,21 @@ public class CategoriesController : Controller
     // GET: Categories/Edit/5
     public async Task<IActionResult> Edit(int id)
     {
-        var query = new GetCategoryByIdQuery(id);
-        var category = await _mediator.Send(query);
-
-        if (category == null)
+        try
         {
-            return NotFound();
+            var query = new GetCategoryByIdQuery(id);
+            var category = await _mediator.Send(query);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+            return View(category);
         }
-
-        var command = new UpdateCategoryCommand
+        catch ( Exception ex )
         {
-            Id = category.Id,
-            Name = category.Name,
-            Description = category.Description
-        };
-
-        return View(command);
+           return BadRequest(ex.Message);
+        }
     }
 
     // POST: Categories/Edit/5
@@ -108,7 +107,9 @@ public class CategoriesController : Controller
 
         if (!ModelState.IsValid)
         {
-            return View(command);
+            var query = new GetCategoryByIdQuery(id);
+            var category = await _mediator.Send(query);
+            return View(category);
         }
 
         try

@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using Application.Categories.DTOs;
 using Application.Products.DTOs;
-using Firmeza.Web.Data.Entities;
+using Domain.Enums;
+
 
 namespace Firmeza.Web.Models
 {

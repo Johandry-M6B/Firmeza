@@ -9,7 +9,7 @@ using Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using MediatR;
-using Firmeza.Web.Data.Entities;
+
 
 
 namespace Firmeza.Web.Controllers;

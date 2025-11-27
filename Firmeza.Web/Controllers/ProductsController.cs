@@ -9,22 +9,27 @@ using Application.Products.Queries.GetProducts;
 using Domain.Enums;
 using Firmeza.Application.Products.Commands.UpdateProduct;
 using Firmeza.Application.Suppliers.Queries.GetSuppliers;
+using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Authorization;
 using MediatR;
 
-using Firmeza.Web.Data.Entities;
+
 
 namespace Firmeza.Web.Controllers;
 
 [Authorize(Roles = UserRoles.Admin)]
 public class ProductsController : Controller
 {
+    private readonly ApplicationDbContext _context;
     private readonly IMediator _mediator;
 
-    public ProductsController(IMediator mediator)
+    public ProductsController(
+        ApplicationDbContext context,
+        IMediator mediator)
     {
+        _context = context;
         _mediator = mediator;
     }
 
@@ -102,44 +107,14 @@ public class ProductsController : Controller
     // GET: Products/Edit/5
     public async Task<IActionResult> Edit(int? id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
-
-        var query = new GetProductByIdQuery(id.Value);
-        var product = await _mediator.Send(query);
-
+        var product = await _context.Products.FindAsync(id);
+    
         if (product == null)
         {
             return NotFound();
         }
-
-        // Mapear ProductDto a UpdateProductCommand
-        var command = new UpdateProductCommand
-        {
-            Id = product.Id,
-            Code = product.Code,
-            Name = product.Name,
-            Description = product.Description,
-            CategoryId = product.CategoryId,
-            MeasurementId = product.MeasurementId,
-            SupplierId = product.SupplierId,
-            BuyerPrice = product.BuyerPrice,
-            SalePrice = product.SalePrice,
-            WholesalePrice = product.WholesalePrice,
-            MinimumStock = product.MinimumStock,
-            Mark = product.Mark,
-            Model = product.Model,
-            Color = product.Color,
-            Weight = product.Weight,
-            Size = product.Size,
-            RequiredRefrigeration = product.RequiredRefrigeration,
-            DangerousMaterial = product.DangerousMaterial
-        };
-
-        await LoadSelectLists();
-        return View(command);
+    
+        return View(product);
     }
 
     // POST: Products/Edit/5
@@ -154,21 +129,20 @@ public class ProductsController : Controller
 
         if (!ModelState.IsValid)
         {
-            await LoadSelectLists();
-            return View(command);
+            var product = await _context.Products.FindAsync(id);
+            return View(product);
         }
 
         try
         {
             await _mediator.Send(command);
-            TempData["SuccessMessage"] = "Producto actualizado exitosamente";
-            return RedirectToAction(nameof(Details), new { id });
+            return RedirectToAction(nameof(Index));
         }
         catch (Exception ex)
         {
             ModelState.AddModelError("", ex.Message);
-            await LoadSelectLists();
-            return View(command);
+            var product = await _context.Products.FindAsync(id);
+            return View(product);
         }
     }
 

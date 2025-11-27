@@ -1,4 +1,5 @@
-// Firmeza.Web/Controllers/MeasurementsController.cs
+
+
 
 using Application.Measurements.Commands.DeleteMeasurements;
 using Application.Measurements.Commands.UpdateMeasurements;
@@ -6,21 +7,24 @@ using Application.Measurements.Queries.CreateMeasurement;
 using Application.Measurements.Queries.GetMeasurementById;
 using Application.Products.Queries.GetMeasurements;
 using Domain.Enums;
-using Firmeza.Web.Data.Entities;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
+using Infrastructure.Persistence;
 using MediatR;
-
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Firmeza.Web.Controllers;
 
 [Authorize(Roles = UserRoles.Admin)]
 public class MeasurementsController : Controller
 {
+    private readonly ApplicationDbContext _context;
     private readonly IMediator _mediator;
 
-    public MeasurementsController(IMediator mediator)
+    public MeasurementsController(
+        ApplicationDbContext context,
+        IMediator mediator)
     {
+        _context = context;
         _mediator = mediator;
     }
 
@@ -73,22 +77,13 @@ public class MeasurementsController : Controller
 
     public async Task<IActionResult> Edit(int id)
     {
-        var query = new GetMeasurementByIdQuery(id);
-        var measurement = await _mediator.Send(query);
-
+        var measurement = await _context.Measurements.FindAsync(id);
         if (measurement == null)
         {
             return NotFound();
         }
 
-        var command = new UpdateMeasurementCommand
-        {
-            Id = measurement.Id,
-            Name = measurement.Name,
-            Abbreviation = measurement.Abbreviation
-        };
-
-        return View(command);
+    return View(measurement);
     }
 
     [HttpPost]

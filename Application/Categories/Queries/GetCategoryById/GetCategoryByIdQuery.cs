@@ -11,4 +11,6 @@ public class GetCategoryByIdQuery : IRequest<CategoryDto>
     {
         Id = id;
     }
+
+    
 }
