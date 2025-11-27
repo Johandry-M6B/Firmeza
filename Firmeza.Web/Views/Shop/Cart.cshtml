@@ -1,0 +1,228 @@
+@model CartViewModel
+@{
+    ViewData["Title"] = "Carrito de Compras";
+    Layout = "~/Views/Shared/_ShopLayout.cshtml";
+}
+
+<div class="container py-4">
+    <h2 class="mb-4"><i class="bi bi-cart3"></i> Carrito de Compras</h2>
+
+    @if (Model.Items.Any())
+    {
+        <div class="row">
+            <!-- Productos en el carrito -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        @foreach (var item in Model.Items)
+                        {
+                            <div class="row cart-item mb-3 pb-3 border-bottom" data-product-id="@item.ProductId">
+                                <div class="col-md-6">
+                                    <h5 class="mb-1">@item.ProductName</h5>
+                                    <p class="text-muted mb-2">
+                                        <small>Precio unitario: $@item.Price.ToString("N0") / @item.MeasurementName</small>
+                                    </p>
+                                    @if (item.Quantity >= item.MaxStock)
+                                    {
+                                        <div class="alert alert-warning alert-sm py-1 px-2 mb-0">
+                                            <small><i class="bi bi-exclamation-triangle"></i> Stock máximo alcanzado</small>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label small">Cantidad:</label>
+                                    <div class="input-group input-group-sm">
+                                        <button class="btn btn-outline-secondary decrease-qty" type="button">
+                                            <i class="bi bi-dash"></i>
+                                        </button>
+                                        <input type="number" 
+                                               class="form-control text-center quantity-input" 
+                                               value="@item.Quantity" 
+                                               min="1" 
+                                               max="@item.MaxStock"
+                                               data-product-id="@item.ProductId">
+                                        <button class="btn btn-outline-secondary increase-qty" type="button">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                    <small class="text-muted">Máx: @item.MaxStock</small>
+                                </div>
+
+                                <div class="col-md-2 text-end">
+                                    <label class="form-label small">Total:</label>
+                                    <h5 class="text-primary item-total">$@item.Total.ToString("N0")</h5>
+                                </div>
+
+                                <div class="col-md-1 text-end">
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-danger remove-item" 
+                                            data-product-id="@item.ProductId"
+                                            title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="text-end">
+                            <a asp-action="Index" class="btn btn-outline-primary">
+                                <i class="bi bi-arrow-left"></i> Seguir Comprando
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen del pedido -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm sticky-top" style="top: 20px;">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-calculator"></i> Resumen del Pedido</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <strong id="cart-subtotal">$@Model.Subtotal.ToString("N0")</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>IVA (19%):</span>
+                            <strong id="cart-tax">$@Model.Tax.ToString("N0")</strong>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <h5 class="mb-0">Total:</h5>
+                            <h4 class="text-primary mb-0" id="cart-total">$@Model.Total.ToString("N0")</h4>
+                        </div>
+
+                        <div class="alert alert-info small">
+                            <i class="bi bi-info-circle"></i> Los precios incluyen IVA
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <a asp-action="Checkout" class="btn btn-success btn-lg">
+                                <i class="bi bi-credit-card"></i> Proceder al Pago
+                            </a>
+                            <button type="button" class="btn btn-outline-danger" id="clearCart">
+                                <i class="bi bi-trash"></i> Vaciar Carrito
+                            </button>
+                        </div>
+
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="bi bi-shield-check"></i> Compra segura<br/>
+                                <i class="bi bi-truck"></i> Envío disponible<br/>
+                                <i class="bi bi-clock-history"></i> Soporte 24/7
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Carrito vacío -->
+        <div class="text-center py-5">
+            <i class="bi bi-cart-x display-1 text-muted"></i>
+            <h3 class="mt-3">Tu carrito está vacío</h3>
+            <p class="text-muted">¡Agrega algunos productos para comenzar!</p>
+            <a asp-action="Index" class="btn btn-primary btn-lg mt-3">
+                <i class="bi bi-shop"></i> Ir a la Tienda
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Aumentar cantidad
+        document.querySelectorAll('.increase-qty').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const input = this.parentElement.querySelector('.quantity-input');
+                const max = parseInt(input.max);
+                let value = parseInt(input.value) || 1;
+                if (value < max) {
+                    input.value = value + 1;
+                    updateCartItem(input.dataset.productId, input.value);
+                }
+            });
+        });
+
+        // Disminuir cantidad
+        document.querySelectorAll('.decrease-qty').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const input = this.parentElement.querySelector('.quantity-input');
+                let value = parseInt(input.value) || 1;
+                if (value > 1) {
+                    input.value = value - 1;
+                    updateCartItem(input.dataset.productId, input.value);
+                }
+            });
+        });
+
+        // Cambio manual de cantidad
+        document.querySelectorAll('.quantity-input').forEach(input => {
+            input.addEventListener('change', function() {
+                let value = parseInt(this.value) || 1;
+                const max = parseInt(this.max);
+                if (value < 1) value = 1;
+                if (value > max) value = max;
+                this.value = value;
+                updateCartItem(this.dataset.productId, value);
+            });
+        });
+
+        // Eliminar item
+        document.querySelectorAll('.remove-item').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (confirm('¿Eliminar este producto del carrito?')) {
+                    const productId = this.dataset.productId;
+                    removeFromCart(productId);
+                }
+            });
+        });
+
+        // Vaciar carrito
+        document.getElementById('clearCart')?.addEventListener('click', function() {
+            if (confirm('¿Está seguro que desea vaciar el carrito?')) {
+                document.querySelectorAll('.remove-item').forEach(btn => {
+                    removeFromCart(btn.dataset.productId);
+                });
+                location.reload();
+            }
+        });
+
+        // Actualizar item del carrito
+        function updateCartItem(productId, quantity) {
+            fetch('/Shop/UpdateCartItem', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `productId=${productId}&quantity=${quantity}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Recargar para actualizar totales
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+
+        // Eliminar del carrito
+        function removeFromCart(productId) {
+            fetch('/Shop/RemoveFromCart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `productId=${productId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        }
+    </script>
+}

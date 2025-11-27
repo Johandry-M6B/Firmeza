@@ -1,7 +1,7 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
-
 namespace Firmeza.Web.Data.Entities;
 
 public class Product
@@ -10,24 +10,24 @@ public class Product
     public int Id { get; set; }
     [Required]
     [MaxLength(20)]
-    public string Code { get; set; } 
+    public string Code { get; set; } = null!; 
     [Required]
     [MaxLength(100)]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
     [MaxLength(500)]
-    public string Description { get; set; }
+    public string? Description { get; set; }
     [Required]
     public int CategoryId { get; set; }
     [ForeignKey(nameof(CategoryId))]
-    public virtual Category Category { get; set; }
+    public virtual Category Category { get; set; } = null!;
     [Required]
     public int MeasurementId { get; set; }
     [ForeignKey(nameof(MeasurementId))]
-    public virtual Measurement Measurement { get; set; }
+    public virtual Measurement Measurement { get; set; } = null!;
     
     public int? SupplierId { get; set; }
     [ForeignKey(nameof(SupplierId))]
-    public virtual Supplier Supplier { get; set; }
+    public virtual Supplier? Supplier { get; set; }
     
     //Price e Inventory
     [Column(TypeName = "decimal(18,2)")]

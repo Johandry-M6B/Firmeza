@@ -11,6 +11,40 @@
 </p>
 <table class="table">
     <thead>
+    <tr>
+        <th>Factura</th>
+        <th>Cliente</th>
+        <th>Total</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.InvoiceNumber</td>
+            <td>@item.Customer.FullName</td>
+            <td>$@item.Total.ToString("N0")</td>
+            <td><!-- Estado --></td>
+            <td>
+                <div class="btn-group btn-group-sm">
+                    <a asp-action="Details" asp-route-id="@item.Id" 
+                       class="btn btn-info">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <a asp-action="PrintPdf" asp-route-id="@item.Id" 
+                       class="btn btn-primary" target="_blank">
+                        <i class="bi bi-file-pdf"></i>
+                    </a>
+                </div>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+<table class="table">
+    <thead>
         <tr>
             <th>
                 @Html.DisplayNameFor(model => model.InvoiceNumber)

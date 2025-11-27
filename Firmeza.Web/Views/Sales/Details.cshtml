@@ -1,120 +1,277 @@
 @model Firmeza.Web.Data.Entities.Sale
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = $"Venta #{Model.InvoiceNumber}";
 }
 
-<h1>Details</h1>
+<div class="container-fluid">
+    <!-- Cabecera con botones -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-receipt"></i> Detalle de Venta #@Model.InvoiceNumber</h2>
+        <div class="btn-group">
+            <a asp-action="PrintPdf" asp-route-id="@Model.Id" 
+               class="btn btn-primary" target="_blank" title="Imprimir">
+                <i class="bi bi-printer"></i> Imprimir
+            </a>
+            <a asp-action="DownloadPdf" asp-route-id="@Model.Id" 
+               class="btn btn-success" title="Descargar PDF">
+                <i class="bi bi-download"></i> Descargar PDF
+            </a>
+            <a asp-action="Edit" asp-route-id="@Model.Id" 
+               class="btn btn-warning" title="Editar">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+            <a asp-action="Index" class="btn btn-secondary" title="Volver al listado">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
 
-<div>
-    <h4>Sale</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.InvoiceNumber)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.InvoiceNumber)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Date)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Date)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Customer)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Customer.DocumentNumber)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.SubTotal)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.SubTotal)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Discount)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Discount)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Vat)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Vat)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Total)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Total)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PaymentFrom)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PaymentFrom)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.AmountPaid)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AmountPaid)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Balance)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Balance)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FullPaymentDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FullPaymentDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DeliveryAddress)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DeliveryAddress)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DeliveryDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DeliveryDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Devoted)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Devoted)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Observations)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Observations)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DateCreated)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DateCreated)
-        </dd>
-    </dl>
+    <!-- Tarjeta de información de la venta -->
+    <div class="row">
+        <!-- Información General -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Información de la Venta</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Número de Factura:</dt>
+                        <dd class="col-sm-7">
+                            <strong class="text-primary">@Model.InvoiceNumber</strong>
+                        </dd>
+
+                        <dt class="col-sm-5">Fecha:</dt>
+                        <dd class="col-sm-7">@Model.Date.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                        <dt class="col-sm-5">Estado:</dt>
+                        <dd class="col-sm-7">
+                            @switch (Model.Status)
+                            {
+                                case Firmeza.Web.Data.Entities.SaleStatus.Paid:
+                                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> Pagada</span>
+                                    break;
+                                case Firmeza.Web.Data.Entities.SaleStatus.Pending:
+                                    <span class="badge bg-warning"><i class="bi bi-clock"></i> Pendiente</span>
+                                    break;
+                                case Firmeza.Web.Data.Entities.SaleStatus.Cancelled:
+                                    <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Anulada</span>
+                                    break;
+                                case Firmeza.Web.Data.Entities.SaleStatus.Credit:
+                                    <span class="badge bg-info"><i class="bi bi-credit-card"></i> Crédito</span>
+                                    break;
+                                case Firmeza.Web.Data.Entities.SaleStatus.PartiallyPaid:
+                                    <span class="badge bg-warning"><i class="bi bi-cash-stack"></i> Pago Parcial</span>
+                                    break;
+                            }
+                        </dd>
+
+                        <dt class="col-sm-5">Forma de Pago:</dt>
+                        <dd class="col-sm-7">
+                            @switch (Model.PaymentFrom)
+                            {
+                                case Firmeza.Web.Data.Entities.PaymentFrom.Cash:
+                                    <span><i class="bi bi-cash"></i> Efectivo</span>
+                                    break;
+                                case Firmeza.Web.Data.Entities.PaymentFrom.Transfer:
+                                    <span><i class="bi bi-bank"></i> Transferencia</span>
+                                    break;
+                                case Firmeza.Web.Data.Entities.PaymentFrom.CreditCard:
+                                    <span><i class="bi bi-credit-card-2-front"></i> Tarjeta de Crédito</span>
+                                    break;
+                                case Firmeza.Web.Data.Entities.PaymentFrom.DebitCard:
+                                    <span><i class="bi bi-credit-card"></i> Tarjeta de Débito</span>
+                                    break;
+                                case Firmeza.Web.Data.Entities.PaymentFrom.Check:
+                                    <span><i class="bi bi-file-earmark-text"></i> Cheque</span>
+                                    break;
+                                case Firmeza.Web.Data.Entities.PaymentFrom.Credit:
+                                    <span><i class="bi bi-calendar-check"></i> Crédito</span>
+                                    break;
+                            }
+                        </dd>
+
+                        @if (!string.IsNullOrEmpty(Model.Observations))
+                        {
+                            <dt class="col-sm-5">Observaciones:</dt>
+                            <dd class="col-sm-7">@Model.Observations</dd>
+                        }
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información del Cliente -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-person"></i> Datos del Cliente</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Nombre Completo:</dt>
+                        <dd class="col-sm-7"><strong>@Model.Customer.FullName</strong></dd>
+
+                        <dt class="col-sm-5">Documento:</dt>
+                        <dd class="col-sm-7">@Model.Customer.DocumentNumber</dd>
+
+                        @if (!string.IsNullOrEmpty(Model.Customer.PhoneNumber))
+                        {
+                            <dt class="col-sm-5">Teléfono:</dt>
+                            <dd class="col-sm-7">
+                                <i class="bi bi-telephone"></i> @Model.Customer.PhoneNumber
+                            </dd>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.Customer.Email))
+                        {
+                            <dt class="col-sm-5">Email:</dt>
+                            <dd class="col-sm-7">
+                                <i class="bi bi-envelope"></i> @Model.Customer.Email
+                            </dd>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.Customer.City))
+                        {
+                            <dt class="col-sm-5">Ciudad:</dt>
+                            <dd class="col-sm-7">@Model.Customer.City</dd>
+                        }
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Productos vendidos -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="bi bi-cart"></i> Productos</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Producto</th>
+                            <th class="text-center">Cantidad</th>
+                            <th class="text-end">Precio Unit.</th>
+                            <th class="text-center">Desc.</th>
+                            <th class="text-end">Subtotal</th>
+                            <th class="text-end">IVA</th>
+                            <th class="text-end">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var index = 1;
+                        }
+                        @foreach (var detail in Model.SalesDetails)
+                        {
+                            <tr>
+                                <td>@index</td>
+                                <td>@detail.Product.Name</td>
+                                <td class="text-center">@detail.Quantity</td>
+                                <td class="text-end">$@detail.Price.ToString("N0")</td>
+                                <td class="text-center">@detail.Discount.ToString("N1")%</td>
+                                <td class="text-end">$@detail.SubTotal.ToString("N0")</td>
+                                <td class="text-end">$@detail.Vat.ToString("N0")</td>
+                                <td class="text-end"><strong>$@detail.Total.ToString("N0")</strong></td>
+                            </tr>
+                            index++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Totales -->
+    <div class="row">
+        <div class="col-md-6 offset-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-calculator"></i> Totales</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-6">Subtotal:</dt>
+                        <dd class="col-sm-6 text-end">${Model.SubTotal.ToString("N0")}</dd>
+
+                        @if (Model.Discount > 0)
+                        {
+                            <dt class="col-sm-6">Descuento:</dt>
+                            <dd class="col-sm-6 text-end text-danger">
+                                -$@Model.Discount.ToString("N0")
+                            </dd>
+                        }
+
+                        <dt class="col-sm-6">IVA (19%):</dt>
+                        <dd class="col-sm-6 text-end">${Model.Vat.ToString("N0")}</dd>
+
+                        <dt class="col-sm-6 border-top pt-2"><strong>TOTAL:</strong></dt>
+                        <dd class="col-sm-6 text-end border-top pt-2">
+                            <h4 class="text-success mb-0">${Model.Total.ToString("N0")}</h4>
+                        </dd>
+
+                        @if (Model.Status != Firmeza.Web.Data.Entities.SaleStatus.Pending)
+                        {
+                            <dt class="col-sm-6 pt-2">Monto Pagado:</dt>
+                            <dd class="col-sm-6 text-end pt-2 text-success">
+                                <strong>${Model.AmountPaid.ToString("N0")}</strong>
+                            </dd>
+
+                            @if (Model.Balance > 0)
+                            {
+                                <dt class="col-sm-6">Saldo Pendiente:</dt>
+                                <dd class="col-sm-6 text-end text-danger">
+                                    <strong>${Model.Balance.ToString("N0")}</strong>
+                                </dd>
+                            }
+                        }
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información de entrega -->
+    @if (!string.IsNullOrEmpty(Model.DeliveryAddress))
+    {
+        <div class="card mt-4">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0"><i class="bi bi-truck"></i> Información de Entrega</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-2">Dirección:</dt>
+                    <dd class="col-sm-10">@Model.DeliveryAddress</dd>
+
+                    @if (Model.DeliveryDate.HasValue)
+                    {
+                        <dt class="col-sm-2">Fecha de Entrega:</dt>
+                        <dd class="col-sm-10">@Model.DeliveryDate.Value.ToString("dd/MM/yyyy")</dd>
+                    }
+
+                    <dt class="col-sm-2">Estado:</dt>
+                    <dd class="col-sm-10">
+                        @if (Model.Devoted)
+                        {
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle"></i> Entregado
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning">
+                                <i class="bi bi-clock"></i> Pendiente de Entrega
+                            </span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    }
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+

@@ -1,0 +1,7 @@
+﻿services:
+  firmeza.api:
+    image: firmeza.api
+    build:
+      context: .
+      dockerfile: Firmeza.Api/Dockerfile
+

@@ -4,35 +4,57 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="AutoMapper" Version="12.0.1" />
+      <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
       <PackageReference Include="ClosedXML" Version="0.105.0" />
       <PackageReference Include="EPPlus" Version="8.2.1" />
+      <PackageReference Include="MediatR" Version="13.1.0" />
+      <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
       <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.21" />
       <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.21" />
+      <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.21" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
       <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.21" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.21" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.10">
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.21">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
       <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
       <PackageReference Include="Npgsql" Version="9.0.4" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+      <PackageReference Include="QuestPDF" Version="2025.7.4" />
       <PackageReference Include="Supabase" Version="1.1.1" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Areas\SalesController\Controllers\" />
-      <Folder Include="Areas\SalesController\Data\" />
-      <Folder Include="Areas\SalesController\Models\" />
-      <Folder Include="Areas\SalesController\Views\" />
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Application\Application.csproj" />
+      <ProjectReference Include="..\Domain\Domain.csproj" />
+      <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="MediatR">
+        <HintPath>..\..\..\.nuget\packages\mediatr\13.1.0\lib\net8.0\MediatR.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Services\" />
     </ItemGroup>
 
 </Project>

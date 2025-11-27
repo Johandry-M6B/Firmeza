@@ -1,42 +1,69 @@
-using Firmeza.Web.Data.Entities;
+using Domain.Enums;
+using Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 
 namespace Firmeza.Web.Data;
 
 public static class IdentitySeeder
 {
+    // Definir roles aquí por si acaso
+    private const string AdminRole = "Admin";
+    private const string EmployeeRole = "Employee";
+    private const string CustomerRole = "Customer";
+
     public static async Task SeedAsync(
         UserManager<ApplicationUser> userManager,
-        RoleManager<ApplicationRole> roleManager)
+        RoleManager<IdentityRole> roleManager)
     {
-        if (!await roleManager.RoleExistsAsync(UserRoles.Admin))
+        Console.WriteLine("🌱 Iniciando seed de Identity...");
+        
+        // 1. Crear todos los roles
+        var roles = new[] { AdminRole, EmployeeRole, CustomerRole };
+        
+        foreach (var roleName in roles)
         {
-            var adminRole = new ApplicationRole
+            if (!await roleManager.RoleExistsAsync(roleName))
             {
-                Name = UserRoles.Admin,
-                Description = "Administrator role with full permissions"
-            };
-            var roleResult = await roleManager.CreateAsync(adminRole);
-            if (!roleResult.Succeeded)
-            {
-                Console.WriteLine($"Rol '{UserRoles.Admin}'");
+                Console.WriteLine($"🔨 Creando rol '{roleName}'...");
+                
+                var role = new IdentityRole(roleName);
+                var result = await roleManager.CreateAsync(role);
+                
+                if (result.Succeeded)
+                {
+                    Console.WriteLine($"✅ Rol '{roleName}' creado exitosamente");
+                }
+                else
+                {
+                    Console.WriteLine($"❌ ERROR creando rol '{roleName}':");
+                    foreach (var error in result.Errors)
+                    {
+                        Console.WriteLine($"   - {error.Code}: {error.Description}");
+                    }
+                }
             }
             else
             {
-                Console.WriteLine($"Error creating role '{UserRoles.Admin}':");
-                foreach (var error in roleResult.Errors)
-                {
-                    Console.WriteLine($"-{error.Description}");
-                }
-                return;
+                Console.WriteLine($"ℹ️  Rol '{roleName}' ya existe");
             }
         }
 
+        // Verificar que los roles se crearon
+        var allRoles = roleManager.Roles.ToList();
+        Console.WriteLine($"📊 Total de roles en la BD: {allRoles.Count}");
+        foreach (var role in allRoles)
+        {
+            Console.WriteLine($"   - {role.Name} (ID: {role.Id})");
+        }
+
+        // 2. Crear usuario admin
         var adminEmail = "admin@firmeza.com";
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
         if (adminUser == null)
         {
+            Console.WriteLine("🔨 Creando usuario administrador...");
+            
             adminUser = new ApplicationUser
             {
                 FirstName = "Admin",
@@ -48,32 +75,70 @@ public static class IdentitySeeder
                 PhoneNumber = "3238817902",
                 DocumentNumber = "1001877889"
             };
-            var result = await userManager.CreateAsync(adminUser, "Admin123*");
-            if (result.Succeeded)
+
+            var createResult = await userManager.CreateAsync(adminUser, "Admin123*");
+            
+            if (createResult.Succeeded)
             {
-                await userManager.AddToRolesAsync(adminUser, [UserRoles.Admin]);
-                Console.WriteLine("User admin created successfully.");
-                Console.WriteLine($"Email: '{adminEmail}'");
-                Console.WriteLine("Password: 'Admin123*'");
+                Console.WriteLine($"✅ Usuario '{adminEmail}' creado");
+                
+                var addRoleResult = await userManager.AddToRoleAsync(adminUser, AdminRole);
+                
+                if (addRoleResult.Succeeded)
+                {
+                    Console.WriteLine($"✅ Rol '{AdminRole}' asignado al usuario");
+                    Console.WriteLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+                    Console.WriteLine("📧 Email: admin@firmeza.com");
+                    Console.WriteLine("🔑 Password: Admin123*");
+                    Console.WriteLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+                }
+                else
+                {
+                    Console.WriteLine($"❌ ERROR asignando rol '{AdminRole}':");
+                    foreach (var error in addRoleResult.Errors)
+                    {
+                        Console.WriteLine($"   - {error.Code}: {error.Description}");
+                    }
+                }
             }
             else
             {
-                Console.WriteLine("Error creating the admin user:");
-                foreach (var error in result.Errors)
+                Console.WriteLine("❌ ERROR creando usuario administrador:");
+                foreach (var error in createResult.Errors)
                 {
-                    Console.WriteLine($" - {error.Description}");
+                    Console.WriteLine($"   - {error.Code}: {error.Description}");
                 }
             }
         }
         else
         {
-            var isInRole = await userManager.IsInRoleAsync(adminUser, UserRoles.Admin);
-            if (isInRole)
+            Console.WriteLine($"ℹ️  Usuario '{adminEmail}' ya existe");
+            
+            // Verificar roles del usuario
+            var userRoles = await userManager.GetRolesAsync(adminUser);
+            Console.WriteLine($"   Roles actuales: {string.Join(", ", userRoles)}");
+            
+            // Asegurar que tiene el rol Admin
+            if (!await userManager.IsInRoleAsync(adminUser, AdminRole))
             {
-                await userManager.AddToRolesAsync(adminUser, [UserRoles.Admin]);
-                Console.WriteLine($"Rol the admin assigned to {adminEmail}.");
+                var addRoleResult = await userManager.AddToRoleAsync(adminUser, AdminRole);
+                if (addRoleResult.Succeeded)
+                {
+                    Console.WriteLine($"✅ Rol '{AdminRole}' asignado a {adminEmail}");
+                }
+            }
+            
+            // Asegurar que está activo
+            if (!adminUser.IsActive || !adminUser.EmailConfirmed)
+            {
+                adminUser.IsActive = true;
+                adminUser.EmailConfirmed = true;
+                await userManager.UpdateAsync(adminUser);
+                Console.WriteLine($"✅ Usuario {adminEmail} actualizado (activo y confirmado)");
             }
         }
+        
+        Console.WriteLine("✅ Seed de Identity completado");
+        Console.WriteLine("════════════════════════════════════════");
     }
 }
-

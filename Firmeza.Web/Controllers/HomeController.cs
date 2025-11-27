@@ -1,5 +1,6 @@
 using System.Diagnostics;
-using Firmeza.Web.Data.Entities;
+using Domain.Enums;
+
 using Firmeza.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

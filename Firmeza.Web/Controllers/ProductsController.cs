@@ -1,178 +1,216 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
+
+using Application.Categories.Queries.GetCategories;
+using Application.Products.Commands.CreateProduct;
+using Application.Products.Commands.DeleteProduct;
+using Application.Products.Queries.GetMeasurements;
+using Application.Products.Queries.GetProductById;
+using Application.Products.Queries.GetProducts;
+using Domain.Enums;
+using Firmeza.Application.Products.Commands.UpdateProduct;
+using Firmeza.Application.Suppliers.Queries.GetSuppliers;
+using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Firmeza.Web.Data;
-using Firmeza.Web.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
+using MediatR;
 
-namespace Firmeza.Web.Controllers
+
+
+namespace Firmeza.Web.Controllers;
+
+[Authorize(Roles = UserRoles.Admin)]
+public class ProductsController : Controller
 {
-    [Authorize(Roles = UserRoles.Admin)]
-    public class ProductsController : Controller
+    private readonly ApplicationDbContext _context;
+    private readonly IMediator _mediator;
+
+    public ProductsController(
+        ApplicationDbContext context,
+        IMediator mediator)
     {
-        private readonly ApplicationDbContext _context;
+        _context = context;
+        _mediator = mediator;
+    }
 
-        public ProductsController(ApplicationDbContext context)
+    // GET: Products
+    public async Task<IActionResult> Index(string searchTerm, int? categoryId)
+    {
+        var query = new GetProductsQuery
         {
-            _context = context;
+            SearchTerm = searchTerm,
+            CategoryId = categoryId,
+            OnlyActive = true
+        };
+
+        var products = await _mediator.Send(query);
+        
+        // Para el filtro
+        ViewBag.Categories = await GetCategoriesSelectList();
+        ViewBag.SearchTerm = searchTerm;
+        ViewBag.SelectedCategoryId = categoryId;
+        
+        return View(products);
+    }
+
+    // GET: Products/Details/5
+    public async Task<IActionResult> Details(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
         }
 
-        // GET: Products
-        public async Task<IActionResult> Index()
+        var query = new GetProductByIdQuery(id.Value);
+        var product = await _mediator.Send(query);
+
+        if (product == null)
         {
-            var applicationDbContext = _context.Products.Include(p => p.Category).Include(p => p.Measurement).Include(p => p.Supplier);
-            return View(await applicationDbContext.ToListAsync());
+            return NotFound();
         }
 
-        // GET: Products/Details/5
-        public async Task<IActionResult> Details(int? id)
+        return View(product);
+    }
+
+    // GET: Products/Create
+    public async Task<IActionResult> Create()
+    {
+        await LoadSelectLists();
+        return View();
+    }
+
+    // POST: Products/Create
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(CreateProductCommand command)
+    {
+        if (!ModelState.IsValid)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var product = await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Measurement)
-                .Include(p => p.Supplier)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-
-            return View(product);
+            await LoadSelectLists();
+            return View(command);
         }
 
-        // GET: Products/Create
-        public IActionResult Create()
+        try
         {
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
-            ViewData["MeasurementId"] = new SelectList(_context.Measurements, "Id", "Abbreviation");
-            ViewData["SupplierId"] = new SelectList(_context.Suppliers, "Id", "Nit");
-            return View();
+            var productId = await _mediator.Send(command);
+            TempData["SuccessMessage"] = "Producto creado exitosamente";
+            return RedirectToAction(nameof(Details), new { id = productId });
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError("", ex.Message);
+            await LoadSelectLists();
+            return View(command);
+        }
+    }
+
+    // GET: Products/Edit/5
+    public async Task<IActionResult> Edit(int? id)
+    {
+        var product = await _context.Products.FindAsync(id);
+    
+        if (product == null)
+        {
+            return NotFound();
+        }
+    
+        return View(product);
+    }
+
+    // POST: Products/Edit/5
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, UpdateProductCommand command)
+    {
+        if (id != command.Id)
+        {
+            return NotFound();
         }
 
-        // POST: Products/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Code,Name,Description,CategoryId,MeasurementId,SupplierId,BuyerPrice,SalePrice,WholesalePrice,CurrentStock,MinimumStock,Mark,Model,Color,Weight,Size,RequiredRefrigeration,DangerousMaterial,Active,DateCreated,DateUpdated")] Product product)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(product);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", product.CategoryId);
-            ViewData["MeasurementId"] = new SelectList(_context.Measurements, "Id", "Abbreviation", product.MeasurementId);
-            ViewData["SupplierId"] = new SelectList(_context.Suppliers, "Id", "Nit", product.SupplierId);
-            return View(product);
-        }
-
-        // GET: Products/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var product = await _context.Products.FindAsync(id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", product.CategoryId);
-            ViewData["MeasurementId"] = new SelectList(_context.Measurements, "Id", "Abbreviation", product.MeasurementId);
-            ViewData["SupplierId"] = new SelectList(_context.Suppliers, "Id", "Nit", product.SupplierId);
-            return View(product);
-        }
-
-        // POST: Products/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Code,Name,Description,CategoryId,MeasurementId,SupplierId,BuyerPrice,SalePrice,WholesalePrice,CurrentStock,MinimumStock,Mark,Model,Color,Weight,Size,RequiredRefrigeration,DangerousMaterial,Active,DateCreated,DateUpdated")] Product product)
-        {
-            if (id != product.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ProductExists(product.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", product.CategoryId);
-            ViewData["MeasurementId"] = new SelectList(_context.Measurements, "Id", "Abbreviation", product.MeasurementId);
-            ViewData["SupplierId"] = new SelectList(_context.Suppliers, "Id", "Nit", product.SupplierId);
-            return View(product);
-        }
-
-        // GET: Products/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var product = await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Measurement)
-                .Include(p => p.Supplier)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-
-            return View(product);
-        }
-
-        // POST: Products/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        if (!ModelState.IsValid)
         {
             var product = await _context.Products.FindAsync(id);
-            if (product != null)
-            {
-                _context.Products.Remove(product);
-            }
+            return View(product);
+        }
 
-            await _context.SaveChangesAsync();
+        try
+        {
+            await _mediator.Send(command);
             return RedirectToAction(nameof(Index));
         }
-
-        private bool ProductExists(int id)
+        catch (Exception ex)
         {
-            return _context.Products.Any(e => e.Id == id);
+            ModelState.AddModelError("", ex.Message);
+            var product = await _context.Products.FindAsync(id);
+            return View(product);
         }
+    }
+
+    // GET: Products/Delete/5
+    public async Task<IActionResult> Delete(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        var query = new GetProductByIdQuery(id.Value);
+        var product = await _mediator.Send(query);
+
+        if (product == null)
+        {
+            return NotFound();
+        }
+
+        return View(product);
+    }
+
+    // POST: Products/Delete/5
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        try
+        {
+            var command = new DeleteProductCommand { Id = id };
+            await _mediator.Send(command);
+            
+            TempData["SuccessMessage"] = "Producto desactivado exitosamente";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+            return RedirectToAction(nameof(Details), new { id });
+        }
+    }
+
+    // ===================================
+    // MÉTODOS PRIVADOS AUXILIARES
+    // ===================================
+
+    private async Task LoadSelectLists()
+    {
+        ViewData["CategoryId"] = await GetCategoriesSelectList();
+        ViewData["MeasurementId"] = await GetMeasurementsSelectList();
+        ViewData["SupplierId"] = await GetSuppliersSelectList();
+    }
+
+    private async Task<SelectList> GetCategoriesSelectList()
+    {
+        var categories = await _mediator.Send(new GetCategoriesQuery { OnlyActive = true });
+        return new SelectList(categories, "Id", "Name");
+    }
+
+    private async Task<SelectList> GetMeasurementsSelectList()
+    {
+        var measurements = await _mediator.Send(new GetMeasurementsQuery { OnlyActive = true });
+        return new SelectList(measurements, "Id", "Name");
+    }
+
+    private async Task<SelectList> GetSuppliersSelectList()
+    {
+        var suppliers = await _mediator.Send(new GetSuppliersQuery { OnlyActive = true });
+        return new SelectList(suppliers, "Id", "TradeName");
     }
 }
