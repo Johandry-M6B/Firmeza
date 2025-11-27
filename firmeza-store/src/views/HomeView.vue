@@ -23,7 +23,14 @@ onMounted(async () => {
     const data = await productsService.getAll();
     products.value = data;
   } catch (error) {
-    console.error('Error loading products:', error);
+    if (error.response?.status === 401) {
+      // API requires authentication, show empty products list
+      console.warn('Products require authentication. Showing empty list.');
+      products.value = [];
+    } else {
+      console.error('Error loading products:', error);
+      products.value = [];
+    }
   } finally {
     loading.value = false;
   }

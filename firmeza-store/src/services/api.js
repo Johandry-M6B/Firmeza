@@ -26,8 +26,10 @@ apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
+            // Clear the invalid token
             localStorage.removeItem('token');
-            window.location.href = '/login';
+            // Don't redirect automatically - let the calling code handle it
+            // This allows public pages to load even if API calls fail
         }
         return Promise.reject(error);
     }
