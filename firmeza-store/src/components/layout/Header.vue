@@ -24,19 +24,28 @@ const handleSearch = () => {
   <div class="bg-gray-800 text-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
       <div class="flex justify-between items-center text-sm">
-        <div class="flex items-center space-x-4">
-          <span>📍 Productos</span>
-          <span>🛒 Carrito</span>
-          <span v-if="authStore.isAuthenticated">👤 Admin</span>
+        <div class="flex items-center space-x-6">
+          <RouterLink to="/products" class="flex items-center space-x-1 hover:text-gray-300 transition">
+            <span>📍</span>
+            <span>Productos</span>
+          </RouterLink>
+          <RouterLink to="/cart" class="flex items-center space-x-1 hover:text-gray-300 transition">
+            <span>🛒</span>
+            <span>Carrito</span>
+          </RouterLink>
+          <RouterLink v-if="authStore.isAuthenticated" to="/admin" class="flex items-center space-x-1 hover:text-gray-300 transition">
+            <span>👤</span>
+            <span>Admin</span>
+          </RouterLink>
         </div>
         <div class="flex items-center space-x-4">
-          <RouterLink v-if="!authStore.isAuthenticated" to="/login" class="hover:text-gray-300">
+          <RouterLink v-if="!authStore.isAuthenticated" to="/login" class="hover:text-gray-300 transition">
             Iniciar sesión
           </RouterLink>
-          <RouterLink v-if="!authStore.isAuthenticated" to="/register" class="hover:text-gray-300">
-            Realizar actualización
+          <RouterLink v-if="!authStore.isAuthenticated" to="/register" class="hover:text-gray-300 transition">
+            Registrarse
           </RouterLink>
-          <button v-if="authStore.isAuthenticated" @click="authStore.logout" class="hover:text-gray-300">
+          <button v-if="authStore.isAuthenticated" @click="authStore.logout" class="hover:text-gray-300 transition">
             Salir
           </button>
         </div>
