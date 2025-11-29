@@ -1,10 +1,12 @@
 using Domain.Entities;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 
 namespace Infrastructure.Persistence;
 
 public class ApplicationDbContextSeed
 {
-    public static async Task SeedAsync(ApplicationDbContext context)
+    public static async Task SeedAsync(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
     {
         // Seed Categories
         if (!context.Categories.Any())
@@ -89,6 +91,26 @@ public class ApplicationDbContextSeed
                     Active = true 
                 }
             );
+        }
+
+        // Seed Default User
+        var defaultUser = new ApplicationUser 
+        { 
+            UserName = "admin@firmeza.com", 
+            Email = "admin@firmeza.com",
+            FirstName = "Admin",
+            LastName = "Firmeza",
+            IsActive = true
+        };
+
+        if (!context.Users.Any(u => u.UserName == defaultUser.UserName))
+        {
+            var result = await userManager.CreateAsync(defaultUser, "Admin123*");
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new Exception($"Failed to create default user: {errors}");
+            }
         }
 
         await context.SaveChangesAsync();

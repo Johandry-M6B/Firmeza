@@ -19,7 +19,8 @@ echo ""
 # Clean up previous test results
 if [ -d "test-results" ]; then
     echo -e "${YELLOW}Cleaning up previous test results...${NC}"
-    rm -rf test-results
+    # Use docker to remove files created by docker (root)
+    docker run --rm -v "$(pwd):/app" -w /app alpine rm -rf test-results
 fi
 
 # Create test results directory
@@ -27,11 +28,11 @@ mkdir -p test-results
 
 # Build and run tests
 echo -e "${GREEN}Building test container...${NC}"
-docker-compose -f docker-compose.test.yml build
+docker compose -f docker-compose.test.yml build
 
 echo ""
 echo -e "${GREEN}Running tests...${NC}"
-docker-compose -f docker-compose.test.yml up --abort-on-container-exit
+docker compose -f docker-compose.test.yml up --abort-on-container-exit
 
 # Capture exit code
 TEST_EXIT_CODE=$?
@@ -39,7 +40,7 @@ TEST_EXIT_CODE=$?
 # Clean up containers
 echo ""
 echo -e "${YELLOW}Cleaning up containers...${NC}"
-docker-compose -f docker-compose.test.yml down
+docker compose -f docker-compose.test.yml down
 
 # Display results
 echo ""

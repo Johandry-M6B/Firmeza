@@ -63,6 +63,9 @@ public static class DependencyInjection
         // Para CurrentUserService
         services.AddHttpContextAccessor();
 
+        services.AddScoped<ApplicationDbContextInitialiser>();
+        services.AddHostedService<InitialiserHostedService>();
+
         return services;
     }
 }

@@ -126,25 +126,6 @@ var app = builder.Build();
 // SEED DE DATOS (Solo en Development)
 // ============================================
 
-if (app.Environment.IsDevelopment())
-{
-    using var scope = app.Services.CreateScope();
-    var services = scope.ServiceProvider;
-    var logger = services.GetRequiredService<ILogger<Program>>();
-
-    try
-    {
-        var context = services.GetRequiredService<ApplicationDbContext>();
-        await context.Database.MigrateAsync();
-
-        logger.LogInformation("✅ API initialized successfully");
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "❌ Error during API initialization");
-    }
-}
-
 // ============================================
 // MIDDLEWARE PIPELINE
 // ============================================
@@ -189,3 +170,5 @@ Console.WriteLine("📚 Swagger UI: http://localhost:5000 or https://localhost:5
 Console.WriteLine("❤️  Health Check: http://localhost:5000/health");
 
 app.Run();
+
+public partial class Program { }

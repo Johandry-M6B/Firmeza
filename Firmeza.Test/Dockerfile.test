@@ -11,6 +11,7 @@ COPY ["Application/Application.csproj", "Application/"]
 COPY ["Infrastructure/Infrastructure.csproj", "Infrastructure/"]
 COPY ["Firmeza.Api/Firmeza.Api.csproj", "Firmeza.Api/"]
 COPY ["Firmeza.Test/Firmeza.Test.csproj", "Firmeza.Test/"]
+COPY ["Firmeza.Test/appsettings.Test.json", "Firmeza.Test/"]
 
 # Restore dependencies
 RUN dotnet restore "Firmeza.Test/Firmeza.Test.csproj"
@@ -18,9 +19,16 @@ RUN dotnet restore "Firmeza.Test/Firmeza.Test.csproj"
 # Copy all source code
 COPY . .
 
+# Build the API project to generate deps file
+WORKDIR "/src/Firmeza.Api"
+RUN dotnet build "Firmeza.Api.csproj" -c Release --no-restore
+
 # Build the test project
 WORKDIR "/src/Firmeza.Test"
 RUN dotnet build "Firmeza.Test.csproj" -c Release --no-restore
+
+# Copy the API deps file to the test output directory (workaround for WebApplicationFactory)
+RUN cp /src/Firmeza.Api/bin/Release/net8.0/Firmeza.Api.deps.json /src/Firmeza.Test/bin/Release/net8.0/testhost.deps.json || echo "Could not copy deps file"
 
 # Test Stage
 FROM build AS test
