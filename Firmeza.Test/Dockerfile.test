@@ -1,0 +1,36 @@
+# Build and Test Stage
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy solution file
+COPY ["Firmeza.sln", "./"]
+
+# Copy all project files
+COPY ["Domain/Domain.csproj", "Domain/"]
+COPY ["Application/Application.csproj", "Application/"]
+COPY ["Infrastructure/Infrastructure.csproj", "Infrastructure/"]
+COPY ["Firmeza.Api/Firmeza.Api.csproj", "Firmeza.Api/"]
+COPY ["Firmeza.Test/Firmeza.Test.csproj", "Firmeza.Test/"]
+
+# Restore dependencies
+RUN dotnet restore "Firmeza.Test/Firmeza.Test.csproj"
+
+# Copy all source code
+COPY . .
+
+# Build the test project
+WORKDIR "/src/Firmeza.Test"
+RUN dotnet build "Firmeza.Test.csproj" -c Release --no-restore
+
+# Test Stage
+FROM build AS test
+WORKDIR /src/Firmeza.Test
+
+# Run tests with coverage
+ENTRYPOINT ["dotnet", "test", "Firmeza.Test.csproj", \
+    "--no-build", \
+    "--configuration", "Release", \
+    "--logger", "trx;LogFileName=test-results.trx", \
+    "--logger", "console;verbosity=detailed", \
+    "--collect", "XPlat Code Coverage", \
+    "--results-directory", "/testresults"]

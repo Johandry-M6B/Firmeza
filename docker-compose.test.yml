@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  test:
+    build:
+      context: .
+      dockerfile: Firmeza.Test/Dockerfile.test
+      target: test
+    container_name: firmeza-tests
+    volumes:
+      # Mount test results directory to host
+      - ./test-results:/testresults
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Test
+      - DOTNET_ENVIRONMENT=Test
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge

@@ -1,13 +1,14 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
 import { productsService } from '../services/productsService';
 import ProductCard from '../components/product/ProductCard.vue';
-import { BuildingStorefrontIcon } from '@heroicons/vue/24/outline';
+import { BuildingStorefrontIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 
 const products = ref([]);
 const loading = ref(true);
 const selectedCategory = ref('all');
+const searchQuery = ref('');
 
 const categories = [
   { id: 'all', name: 'Todas las categorías', icon: '📦' },
@@ -24,7 +25,6 @@ onMounted(async () => {
     products.value = data;
   } catch (error) {
     if (error.response?.status === 401) {
-      // API requires authentication, show empty products list
       console.warn('Products require authentication. Showing empty list.');
       products.value = [];
     } else {
@@ -36,20 +36,67 @@ onMounted(async () => {
   }
 });
 
-const filteredProducts = ref([]);
+const filteredProducts = computed(() => {
+  let filtered = products.value;
+  
+  if (selectedCategory.value !== 'all') {
+    filtered = filtered.filter(p => p.category?.name?.toLowerCase() === selectedCategory.value);
+  }
+  
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase();
+    filtered = filtered.filter(p => 
+      p.name?.toLowerCase().includes(query) || 
+      p.description?.toLowerCase().includes(query)
+    );
+  }
+  
+  return filtered;
+});
+
+const handleSearch = () => {
+  // Search is reactive, no need to do anything
+};
 </script>
 
 <template>
   <div class="min-h-screen bg-gray-50">
-    <!-- Hero Section -->
+    <!-- Hero Section with Integrated Search -->
     <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="flex items-center space-x-4">
-          <BuildingStorefrontIcon class="h-16 w-16" />
-          <div>
-            <h1 class="text-4xl font-bold">Tienda de Materiales</h1>
-            <p class="text-xl text-blue-100 mt-2">Encuentra todo lo que necesitas para tu construcción</p>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center mb-8">
+          <div class="flex items-center justify-center space-x-3 mb-4">
+            <BuildingStorefrontIcon class="h-16 w-16" />
+            <h1 class="text-5xl font-bold">Tienda de Materiales</h1>
           </div>
+          <p class="text-xl text-blue-100">Encuentra todo lo que necesitas para tu construcción</p>
+        </div>
+
+        <!-- Integrated Search Bar -->
+        <div class="max-w-4xl mx-auto">
+          <form @submit.prevent="handleSearch" class="flex shadow-lg">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Buscar productos..."
+              class="flex-1 px-6 py-4 rounded-l-lg text-gray-900 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <select
+              v-model="selectedCategory"
+              class="px-6 py-4 bg-white text-gray-900 border-l border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+            >
+              <option value="all">Todas las categorías</option>
+              <option v-for="cat in categories.filter(c => c.id !== 'all')" :key="cat.id" :value="cat.id">
+                {{ cat.name }}
+              </option>
+            </select>
+            <button
+              type="submit"
+              class="px-8 py-4 bg-white text-blue-600 rounded-r-lg hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            >
+              <MagnifyingGlassIcon class="h-6 w-6" />
+            </button>
+          </form>
         </div>
       </div>
     </div>
@@ -57,16 +104,16 @@ const filteredProducts = ref([]);
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex gap-6">
-        <!-- Sidebar Categories -->
+        <!-- Dark Sidebar Categories -->
         <aside class="w-64 flex-shrink-0">
-          <div class="bg-white rounded-lg shadow-md overflow-hidden">
-            <div class="bg-gray-800 text-white px-4 py-3 flex items-center space-x-2">
+          <div class="bg-gray-900 rounded-lg shadow-lg overflow-hidden">
+            <div class="bg-black text-white px-4 py-4 flex items-center space-x-2">
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
               </svg>
-              <span class="font-semibold">Categorías</span>
+              <span class="font-semibold text-lg">Categorías</span>
             </div>
-            <ul class="divide-y divide-gray-200">
+            <ul class="divide-y divide-gray-800">
               <li
                 v-for="category in categories"
                 :key="category.id"
@@ -74,8 +121,8 @@ const filteredProducts = ref([]);
                 :class="[
                   'px-4 py-3 cursor-pointer transition-colors',
                   selectedCategory === category.id
-                    ? 'bg-blue-50 text-blue-700 font-medium'
-                    : 'hover:bg-gray-50 text-gray-700'
+                    ? 'bg-blue-600 text-white font-medium'
+                    : 'text-gray-300 hover:bg-gray-800'
                 ]"
               >
                 <span class="mr-2">{{ category.icon }}</span>
@@ -118,7 +165,7 @@ const filteredProducts = ref([]);
         <!-- Products Grid -->
         <main class="flex-1">
           <!-- Info Message -->
-          <div v-if="products.length === 0 && !loading" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div v-if="filteredProducts.length === 0 && !loading" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <div class="flex items-center">
               <svg class="h-5 w-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -134,7 +181,7 @@ const filteredProducts = ref([]);
 
           <!-- Products -->
           <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <ProductCard v-for="product in products" :key="product.id" :product="product" />
+            <ProductCard v-for="product in filteredProducts" :key="product.id" :product="product" />
           </div>
         </main>
       </div>
@@ -175,3 +222,4 @@ const filteredProducts = ref([]);
     </footer>
   </div>
 </template>
+

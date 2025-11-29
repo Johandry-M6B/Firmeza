@@ -34,7 +34,7 @@ const handleSearch = () => {
             Iniciar sesión
           </RouterLink>
           <RouterLink v-if="!authStore.isAuthenticated" to="/register" class="hover:text-gray-300">
-            Realizar actualización
+            Registrarse
           </RouterLink>
           <button v-if="authStore.isAuthenticated" @click="authStore.logout" class="hover:text-gray-300">
             Salir
