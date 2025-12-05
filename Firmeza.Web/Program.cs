@@ -74,19 +74,20 @@ using (var scope = app.Services.CreateScope())
         logger.LogInformation("Base de datos inicializada correctamente");
         await context.Database.MigrateAsync();
         
+        // Obtener UserManager y RoleManager
+        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        
         logger.LogInformation("Sembrando datos iniciales...");
-        await ApplicationDbContextSeed.SeedAsync(context);
+        await ApplicationDbContextSeed.SeedAsync(context, userManager);
         logger.LogInformation("Datos iniciales sembrados correctamente.");
         
         logger.LogInformation("Sembrando roles y usuario admin...");
-        // Seed de roles y usuario admin
-        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         await IdentitySeeder.SeedAsync(userManager, roleManager);
         logger.LogInformation("Datos iniciales roles y usuario admin...");
         
         
-        logger.LogInformation("Base de datos inicializada correctamente");
+        logger.LogInformation("Base de datos inicializada correctamente.");
     }
     catch (Exception ex)
     {
